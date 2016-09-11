@@ -11,13 +11,17 @@ class ScorboardInOrder(Infrastructure):
         Infrastructure.__init__(self,name,parent)
         self.refs = Queue()
         self.uuts = Queue()
+        self.refsCounter = 0
+        self.uutsCounter = 0
 
     def refPush(self,ref):
         self.refs.put(ref)
+        self.refsCounter += 1
         self.update()
 
     def uutPush(self,uut):
         self.uuts.put(uut)
+        self.uutsCounter += 1
         self.update()
 
     def update(self):

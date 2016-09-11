@@ -79,7 +79,7 @@ class StreamDriverMaster:
 
                     for name in stream.payload.nameToElement:
                         if hasattr(trans,name) == False:
-                            raise TestFailure("Missing element in bundle :" + name)
+                            raise Exception("Missing element in bundle :" + name)
                         e = stream.payload.nameToElement[name] <= getattr(trans,name)
 
 

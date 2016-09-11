@@ -206,7 +206,7 @@ class Bundle:
         for element in self.elements:
             # print("append " + element._name + " with name : " + element._name[len(name) + 1:])
             if len(name) == len(element._name):
-                eName = element._name
+                eName = "itself"
             else:
                 eName = element._name[len(name) + 1:]
 
