@@ -1,4 +1,6 @@
+
 import cocotb
+import types
 from cocotb.result import TestFailure
 from cocotb.triggers import RisingEdge, Timer
 from cocotblib.Phase import Infrastructure, PHASE_WAIT_TASKS_END
@@ -69,7 +71,10 @@ class StreamDriverMaster:
                     yield RisingEdge(self.clk)
 
             if self.transactor != None and (int(stream.valid) == 0 or int(stream.ready) == 1):
-                trans = self.transactor()
+                if isinstance(self.transactor,types.GeneratorType):
+                    trans = next(self.transactor)
+                else:
+                    trans = self.transactor()
                 if trans != None:
                     if hasattr(trans,"nextDelay"):
                         nextDelay = trans.nextDelay
