@@ -76,7 +76,7 @@ def ClockDomainAsyncReset(clk,reset,period = 1000):
 
 
 
-import time;
+import time
 @cocotb.coroutine
 def simulationSpeedPrinter(clk):
     counter = 0
