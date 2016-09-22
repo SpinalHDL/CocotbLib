@@ -74,6 +74,10 @@ def ClockDomainAsyncReset(clk,reset,period = 1000):
         clk <= 1
         yield Timer(period/2)
 
+@cocotb.coroutine
+def SimulationTimeout(duration):
+    yield Timer(duration)
+    raise TestFailure("Simulation timeout")
 
 
 import time
