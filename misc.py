@@ -1,9 +1,14 @@
 import random
 
 import cocotb
+from cocotb.binary import BinaryValue
 from cocotb.result import TestFailure
 from cocotb.triggers import Timer, RisingEdge
 
+
+def cocotbXHack():
+    BinaryValue._resolve_to_0     = BinaryValue._resolve_to_0  + BinaryValue._resolve_to_error
+    BinaryValue._resolve_to_error = ""
 
 def log2Up(value):
     return value.bit_length()-1
