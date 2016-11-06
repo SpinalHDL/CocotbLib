@@ -2,7 +2,7 @@
 import cocotb
 import types
 from cocotb.result import TestFailure
-from cocotb.triggers import RisingEdge, Timer
+from cocotb.triggers import RisingEdge, Timer, Event
 from cocotblib.Phase import Infrastructure, PHASE_WAIT_TASKS_END
 from cocotblib.Scorboard import ScorboardInOrder
 
@@ -14,6 +14,21 @@ class Stream:
         self.valid = dut.__getattr__(name + "_valid")
         self.ready = dut.__getattr__(name + "_ready")
         self.payload = Bundle(dut,name + "_payload")
+        # Event
+        self.event_ready = Event()
+
+
+    def startMonitoringReady(self, clk):
+        self.clk  = clk
+        self.fork_ready = cocotb.fork(self.monitor_ready())
+
+    @cocotb.coroutine
+    def monitor_ready(self):
+        while True:
+            yield RisingEdge(self.clk)
+            if int(self.ready) == 1:
+                self.event_ready.set( self.payload )
+
 
 class Transaction(object):
     def __init__(self):
