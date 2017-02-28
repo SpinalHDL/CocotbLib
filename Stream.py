@@ -22,6 +22,10 @@ class Stream:
         self.clk  = clk
         self.fork_ready = cocotb.fork(self.monitor_ready())
 
+
+    def stopMonitoring(self):
+        self.fork_ready.kill()
+
     @cocotb.coroutine
     def monitor_ready(self):
         while True:
