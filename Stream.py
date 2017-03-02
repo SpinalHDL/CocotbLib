@@ -32,7 +32,7 @@ class Stream:
             yield RisingEdge(self.clk)
             if int(self.ready) == 1:
                 self.event_ready.set( self.payload )
-                
+
 
 class Transaction(object):
     def __init__(self):
