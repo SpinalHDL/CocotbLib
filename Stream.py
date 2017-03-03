@@ -22,13 +22,17 @@ class Stream:
         self.clk  = clk
         self.fork_ready = cocotb.fork(self.monitor_ready())
 
+
+    def stopMonitoring(self):
+        self.fork_ready.kill()
+
     @cocotb.coroutine
     def monitor_ready(self):
         while True:
             yield RisingEdge(self.clk)
             if int(self.ready) == 1:
                 self.event_ready.set( self.payload )
-                
+
 
 class Transaction(object):
     def __init__(self):
