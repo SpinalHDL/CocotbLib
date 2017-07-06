@@ -2,6 +2,7 @@ import random
 
 import cocotb
 from cocotb.binary import BinaryValue
+from cocotb.decorators import coroutine
 from cocotb.result import TestFailure
 from cocotb.triggers import Timer, RisingEdge
 
@@ -28,6 +29,13 @@ def randSignal(that):
 def randBoolSignal(that,prob):
     that <= (random.random() < prob)
 
+
+@coroutine
+def clockedWaitTrue(clk,that):
+    while True:
+        yield RisingEdge(clk)
+        if that == True:
+            break
 
 def assertEquals(a, b, name):
     if int(a) != int(b):
