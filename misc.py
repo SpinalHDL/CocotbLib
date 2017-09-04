@@ -66,6 +66,10 @@ def setBit(v, index, x):
     v |= mask
   return v
 
+def testBit(int_type, offset):
+   mask = 1 << offset
+   return (int_type & mask) != 0
+
 def uint(signal):
     return signal.value.integer
 
@@ -255,3 +259,27 @@ def readIHex(path, callback,context):
                     offset = int(line[9:13], 16)
                 else:
                     pass
+
+
+
+@coroutine
+def TriggerAndCond(trigger, cond):
+    while(True):
+        yield trigger
+        if cond:
+            break
+
+
+@coroutine
+def waitClockedCond(clk, cond):
+    while(True):
+        yield RisingEdge(clk)
+        if cond():
+            break
+
+
+
+@coroutine
+def TimerClk(clk, count):
+    for i in xrange(count):
+        yield RisingEdge(clk)
