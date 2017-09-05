@@ -60,3 +60,17 @@ class Apb3:
         readThread = self.read(address,sel)
         yield readThread
         assertEquals(int(readThread.retval), data," APB readAssert failure")
+
+    @coroutine
+    def readAssertMasked(self, address, data, mask, sel=1):
+        readThread = self.read(address,sel)
+        yield readThread
+        assertEquals(int(readThread.retval) & mask, data," APB readAssert failure")
+
+    @coroutine
+    def pull(self, address, dataValue, dataMask, sel=1):
+        while True:
+            readThread = self.read(address, sel)
+            yield readThread
+            if (int(readThread.retval) & dataMask) == dataValue:
+                break
