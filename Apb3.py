@@ -39,6 +39,12 @@ class Apb3:
         randSignal(self.PWDATA)
 
     @coroutine
+    def writeMasked(self, address, data, mask, sel = 1):
+        readThread = self.read(address,sel)
+        yield readThread
+        yield self.write(address,(readThread.retval & ~mask) | (data & mask),sel)
+
+    @coroutine
     def read(self, address, sel=1):
         self.PADDR <= address
         self.PSEL <= sel

@@ -2,7 +2,7 @@ import random
 
 import cocotb
 from cocotb.decorators import coroutine
-from cocotb.result import TestFailure
+from cocotb.result import TestFailure, ReturnValue
 from cocotb.triggers import RisingEdge, Edge, Timer
 
 from cocotblib.TriState import TriStateOutput
@@ -60,19 +60,28 @@ class SpiSlaveMaster:
 
     @coroutine
     def exchange(self, masterData):
+        buffer = ""
         if not self.cpha:
             for i in xrange(self.dataWidth):
                 self.spi.mosi <= testBit(masterData, self.dataWidth - 1 - i)
                 yield Timer(self.baudPeriode >> 1)
+                buffer = buffer + str(self.spi.miso.write) if bool(self.spi.miso.writeEnable) else "x"
                 self.spi.sclk <= (not self.cpol)
                 yield Timer(self.baudPeriode >> 1)
                 self.spi.sclk <= (self.cpol)
         else:
             for i in xrange(self.dataWidth):
-                self.spi.mosi <= testBit(masterData, self.dataWidth - i)
-                self.spi.sclk <= (self.cpol)
-                yield Timer(self.baudPeriode >> 1)
+                self.spi.mosi <= testBit(masterData, self.dataWidth -1  - i)
                 self.spi.sclk <= (not self.cpol)
                 yield Timer(self.baudPeriode >> 1)
+                buffer = buffer + str(self.spi.miso.write) if bool(self.spi.miso.writeEnable) else "x"
+                self.spi.sclk <= (self.cpol)
+                yield Timer(self.baudPeriode >> 1)
 
+        raise ReturnValue(buffer)
 
+    @coroutine
+    def exchangeCheck(self, masterData, slaveData):
+        c = self.exchange(masterData)
+        yield c
+        assert slaveData == int(c.retval,2)
