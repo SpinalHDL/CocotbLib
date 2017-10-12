@@ -219,7 +219,7 @@ def StreamReader(streamName, onTransaction, handle, dut, clk):
 class Bundle:
     def __init__(self,dut,name):
         self.nameToElement = {}
-        self.elements = [a for a in dut if (a._name.startswith(name + "_") and not a._name.endswith("_readableBuffer"))]
+        self.elements = [a for a in dut if (a._name.lower().startswith(name.lower() + "_") and not a._name.lower().endswith("_readablebuffer"))]
 
         for e in [a for a in dut if a._name == name]:
             self.elements.append(e)
