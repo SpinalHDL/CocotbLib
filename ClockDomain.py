@@ -55,7 +55,7 @@ class ClockDomain:
         yield Timer(self.halfPeriod * 5)
 
         if self.reset:
-            self.reset <= 1 if self.typeReset == RESET_ACTIVE_LEVEL.LOW else 0
+            self.reset <= int(1 if self.typeReset == RESET_ACTIVE_LEVEL.LOW else 0)
 
 
     ##########################################################################
@@ -82,7 +82,7 @@ class ClockDomain:
     def _waitEndReset(self):
         while True:
             yield RisingEdge(self.clk)
-            valueReset = 1 if self.typeReset == RESET_ACTIVE_LEVEL.LOW else 0
+            valueReset = int(1 if self.typeReset == RESET_ACTIVE_LEVEL.LOW else 0)
             if int(self.reset) == valueReset:
                 self.event_endReset.set()
                 break;
