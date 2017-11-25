@@ -11,20 +11,24 @@ from cocotblib.misc import Bundle, BoolRandomizer
 
 class Stream:
     def __init__(self, dut, name):
-        self.valid = dut.__getattr__(name + "_valid")
-        self.ready = dut.__getattr__(name + "_ready")
+        self.valid   = dut.__getattr__(name + "_valid")
+        self.ready   = dut.__getattr__(name + "_ready")
         self.payload = Bundle(dut,name + "_payload")
         # Event
         self.event_ready = Event()
-
+        self.event_valid = Event()
 
     def startMonitoringReady(self, clk):
         self.clk  = clk
         self.fork_ready = cocotb.fork(self.monitor_ready())
 
+    def startMonitoringValid(self, clk):
+        self.clk  = clk
+        self.fork_valid = cocotb.fork(self.monitor_valid())
 
     def stopMonitoring(self):
         self.fork_ready.kill()
+        self.fork_valid.kill()
 
     @cocotb.coroutine
     def monitor_ready(self):
@@ -32,6 +36,13 @@ class Stream:
             yield RisingEdge(self.clk)
             if int(self.ready) == 1:
                 self.event_ready.set( self.payload )
+
+    @cocotb.coroutine
+    def monitor_valid(self):
+        while True:
+            yield RisingEdge(self.clk)
+            if int(self.valid) == 1:
+                self.event_valid.set( self.payload )
 
 
 class Transaction(object):
