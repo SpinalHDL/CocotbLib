@@ -56,10 +56,11 @@ class Transaction(object):
         object.__setattr__(self,key,value)
 
     def equalRef(self,ref):
-        if(len(self._nameToElement) != len(ref._nameToElement)):
-            return False
+        # if(len(self._nameToElement) != len(ref._nameToElement)):
+        #     return False
         for name in self._nameToElement:
-            if self._nameToElement[name] != getattr(ref,name):
+            refValue = getattr(ref,name)
+            if refValue != None and self._nameToElement[name] != getattr(ref,name):
                 return False
         return True
 
@@ -124,16 +125,16 @@ class StreamDriverSlave:
         self.stream = stream
         self.clk = clk
         self.reset = reset
+        self.randomizer = BoolRandomizer()
         cocotb.fork(self.stim())
 
     @cocotb.coroutine
     def stim(self):
         stream = self.stream
         stream.ready <= 1
-        randomizer = BoolRandomizer()
         while True:
             yield RisingEdge(self.clk)
-            stream.ready <= randomizer.get()
+            stream.ready <= self.randomizer.get()
 
 
 def TransactionFromBundle(bundle):

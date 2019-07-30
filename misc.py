@@ -117,12 +117,14 @@ class BoolRandomizer:
     def __init__(self):
         self.prob = 0.5
         self.counter = 0
+        self.probLow = 0.1
+        self.probHigh = 0.9
 
     def get(self):
         self.counter += 1
         if self.counter == 100:
             self.counter = 0
-            self.prob = random.uniform(0.1, 0.9)
+            self.prob = random.uniform(self.probLow, self.probHigh)
         return random.random() < self.prob
 
 
