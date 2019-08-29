@@ -23,6 +23,11 @@ class Apb3:
         self.PSEL <= 0
 
     @coroutine
+    def delay(self, cycle):
+        for i in range(cycle):
+            yield RisingEdge(self.clk)
+
+    @coroutine
     def write(self, address, data, sel = 1):
         self.PADDR <= address
         self.PSEL <= sel
