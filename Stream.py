@@ -76,7 +76,8 @@ class Transaction(object):
             if len(n) > biggerName:
                 biggerName = len(n)
         for name in self._nameToElement:
-            buffer += "%s %s: 0x%x\n" % (name," "*(biggerName-len(name)),self._nameToElement[name])
+            e = self._nameToElement[name]
+            buffer += "%s %s: 0x%x\n" % (name," "*(biggerName-len(name)), 0 if e == None else e)
         return buffer
 
 # Transaction = type('Transaction', (object,), {})
