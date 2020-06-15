@@ -283,5 +283,5 @@ def waitClockedCond(clk, cond):
 
 @coroutine
 def TimerClk(clk, count):
-    for i in xrange(count):
+    for i in range(count):
         yield RisingEdge(clk)

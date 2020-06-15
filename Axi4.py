@@ -1,5 +1,5 @@
 import random
-from Queue import Queue
+from queue import Queue
 
 from cocotblib.Phase import PHASE_SIM, Infrastructure
 from cocotblib.Scorboard import ScorboardOutOfOrder
@@ -81,7 +81,7 @@ class Axi4SharedMemoryChecker(Infrastructure):
         self.reservedAddresses.pop(ref,None)
 
     def isAddressRangeBusy(self,start,end):
-        for r in self.reservedAddresses.itervalues():
+        for r in self.reservedAddresses.values():
             if start < r[1] and end > r[0]:
                 return True
         return False
@@ -130,14 +130,14 @@ class Axi4SharedMemoryChecker(Infrastructure):
         if self.readWriteRand.get():
             cmd.write = 1
             beatAddr = cmd.addr
-            for i in xrange(cmd.len+1):
+            for i in range(cmd.len+1):
                 dataTrans = Transaction()
                 dataTrans.data = randBits(self.dataWidth)
                 dataTrans.strb = randBits(self.dataWidth/8)
                 dataTrans.last = 1 if cmd.len == i else 0
                 self.writeTasks.put(dataTrans)
 
-                for s in xrange(self.dataWidth/8):
+                for s in range(self.dataWidth/8):
                     if (dataTrans.strb >> s) & 1 == 1:
                         self.ram[(beatAddr & ~(self.dataWidth/8-1)) + s] = (dataTrans.data >> (s*8)) & 0xFF
                 beatAddr = Axi4AddrIncr(beatAddr,cmd.burst,cmd.len,cmd.size)
@@ -152,11 +152,11 @@ class Axi4SharedMemoryChecker(Infrastructure):
             cmd.write = 0
 
             beatAddr = cmd.addr
-            for s in xrange(cmd.len + 1):
+            for s in range(cmd.len + 1):
                 readRsp = Transaction()
                 addrBase = beatAddr & ~(self.dataWidth/8-1)
                 readRsp.data = 0
-                for i in xrange(self.dataWidth / 8):
+                for i in range(self.dataWidth / 8):
                     readRsp.data |= self.ram[addrBase + i] << (i*8)
                 readRsp.resp = 0
                 readRsp.last = 1 if cmd.len == s else 0
