@@ -49,7 +49,7 @@ class AhbLite3TraficGenerator:
             wrapped = burst != 1 and burst & 1 == 1
             incr = burst == 1
             write = random.random() < 0.5
-            size = 1 << random.randint(0,log2Up(self.dataWidth/8))
+            size = 1 << random.randint(0,log2Up(self.dataWidth//8))
             prot = random.randint(0,15)
             burstSize = (1 << size)*burstLength
 
@@ -62,7 +62,7 @@ class AhbLite3TraficGenerator:
 
 
             buffer = []
-            for beat in xrange(burstLength):
+            for beat in range(burstLength):
                 trans = AhbLite3Transaction()
                 trans.HWRITE = write
                 trans.HSIZE = log2Up(size)
@@ -164,7 +164,7 @@ class AhbLite3MasterReadChecker:
                         raise TestFailure("Empty buffer ??? ")
 
                     bufferData = self.buffer.get()
-                    for i in xrange(byteOffset,byteOffset + size):
+                    for i in range(byteOffset,byteOffset + size):
                         assertEquals((int(ahb.HRDATA) >> (i*8)) & 0xFF,(bufferData >> (i*8)) & 0xFF,"AHB master read checker faild %x "  %(int(ahb.HADDR)) )
 
                     self.counter += 1
@@ -172,7 +172,7 @@ class AhbLite3MasterReadChecker:
 
                 readIncoming = int(ahb.HTRANS) >= 2 and int(ahb.HWRITE) == 0
                 size = 1 << int(ahb.HSIZE)
-                byteOffset = int(ahb.HADDR) % (len(ahb.HWDATA) / 8)
+                byteOffset = int(ahb.HADDR) % (len(ahb.HWDATA) // 8)
 
 
 
@@ -219,7 +219,7 @@ class AhbLite3SlaveMemory:
             if valid == 1:
                 if trans >= 2:
                     if write == 1:
-                        for idx in xrange(size):
+                        for idx in range(size):
                             self.ram[address-self.base  + idx] = (int(ahb.HWDATA) >> (8*(addressOffset + idx))) & 0xFF
                             # print("write %x with %x" % (address + idx,(int(ahb.HWDATA) >> (8*(addressOffset + idx))) & 0xFF))
 
@@ -228,21 +228,15 @@ class AhbLite3SlaveMemory:
             write = int(ahb.HWRITE)
             size = 1 << int(ahb.HSIZE)
             address = int(ahb.HADDR)
-            addressOffset = address % (len(ahb.HWDATA)/8)
+            addressOffset = address % (len(ahb.HWDATA)//8)
 
             ahb.HRDATA <= 0
             if valid == 1:
                 if trans >= 2:
                     if write == 0:
                         data = 0
-                        for idx in xrange(size):
+                        for idx in range(size):
                             data |= self.ram[address-self.base + idx] << (8*(addressOffset + idx))
                             # print("read %x with %x" % (address + idx, self.ram[address-self.base + idx]))
                         # print(str(data))
                         ahb.HRDATA <= int(data)
-
-
-
-
-
-

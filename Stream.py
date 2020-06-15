@@ -99,7 +99,7 @@ class StreamDriverMaster:
             yield RisingEdge(self.clk)
             if int(stream.valid) == 1 and int(stream.ready) == 1:
                 stream.valid <= 0
-                for i in xrange(nextDelay):
+                for i in range(nextDelay):
                     yield RisingEdge(self.clk)
 
             if self.transactor != None and (int(stream.valid) == 0 or int(stream.ready) == 1):

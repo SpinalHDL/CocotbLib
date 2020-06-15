@@ -1,4 +1,4 @@
-from Queue import Queue
+from queue import Queue
 
 import cocotb
 from cocotb.result import TestFailure
@@ -70,19 +70,19 @@ class ScorboardOutOfOrder(Infrastructure):
         self.listeners.append(func)
 
     def refPush(self,ref,oooid):
-        if not self.refsDic.has_key(oooid):
+        if oooid not in self.refsDic:
             self.refsDic[oooid] = Queue()
         self.refsDic[oooid].put(ref)
         self.update(oooid)
 
     def uutPush(self, uut, oooid):
-        if not self.uutsDic.has_key(oooid):
+        if oooid not in self.uutsDic:
             self.uutsDic[oooid] = Queue()
         self.uutsDic[oooid].put(uut)
         self.update(oooid)
 
     def update(self,oooid):
-        if self.uutsDic.has_key(oooid) and self.refsDic.has_key(oooid):
+        if oooid in self.uutsDic and oooid in self.refsDic:
             refs = self.refsDic[oooid]
             uuts = self.uutsDic[oooid]
 
@@ -112,11 +112,11 @@ class ScorboardOutOfOrder(Infrastructure):
         if phase == PHASE_CHECK_SCORBOARDS:
             if len(self.refsDic) != 0 or len(self.uutsDic) != 0:
                 error = self.getPath() + " has some remaining transaction :\n"
-                for l in self.refsDic.itervalues():
+                for l in self.refsDic.values():
                     for e in l.queue:
                         error += "REF:\n" + str(e) + "\n"
 
-                for l in self.uutsDic.itervalues():
+                for l in self.uutsDic.values():
                     for e in l.queue:
                         error += "UUT:\n" + str(e) + "\n"
 
