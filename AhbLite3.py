@@ -49,7 +49,7 @@ class AhbLite3TraficGenerator:
             wrapped = burst != 1 and burst & 1 == 1
             incr = burst == 1
             write = random.random() < 0.5
-            size = 1 << random.randint(0,log2Up(self.dataWidth/8))
+            size = 1 << random.randint(0,log2Up(self.dataWidth//8))
             prot = random.randint(0,15)
             burstSize = (1 << size)*burstLength
 
@@ -172,7 +172,7 @@ class AhbLite3MasterReadChecker:
 
                 readIncoming = int(ahb.HTRANS) >= 2 and int(ahb.HWRITE) == 0
                 size = 1 << int(ahb.HSIZE)
-                byteOffset = int(ahb.HADDR) % (len(ahb.HWDATA) / 8)
+                byteOffset = int(ahb.HADDR) % (len(ahb.HWDATA) // 8)
 
 
 
@@ -228,7 +228,7 @@ class AhbLite3SlaveMemory:
             write = int(ahb.HWRITE)
             size = 1 << int(ahb.HSIZE)
             address = int(ahb.HADDR)
-            addressOffset = address % (len(ahb.HWDATA)/8)
+            addressOffset = address % (len(ahb.HWDATA)//8)
 
             ahb.HRDATA <= 0
             if valid == 1:
@@ -240,9 +240,3 @@ class AhbLite3SlaveMemory:
                             # print("read %x with %x" % (address + idx, self.ram[address-self.base + idx]))
                         # print(str(data))
                         ahb.HRDATA <= int(data)
-
-
-
-
-
-

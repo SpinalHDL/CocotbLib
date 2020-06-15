@@ -54,7 +54,7 @@ class Axi4SharedMemoryChecker(Infrastructure):
         self.axi = axi
         self.idWidth = len(axi.arw.payload.hid)
         self.addressWidth = addressWidth
-        self.ram = bytearray(b'\x00' * ((1 << addressWidth)*len(axi.w.payload.data)/8))
+        self.ram = bytearray(b'\x00' * ((1 << addressWidth)*len(axi.w.payload.data)//8))
         self.doReadWriteCmdRand = BoolRandomizer()
         self.readWriteRand = BoolRandomizer()
         self.writeDataRand = BoolRandomizer()
@@ -94,7 +94,7 @@ class Axi4SharedMemoryChecker(Infrastructure):
         cmd.hid = randBits(self.idWidth)  # Each master can use 4 id
         cmd.region = randBits(4)
         cmd.len = randBits(4)
-        cmd.size = random.randint(0,log2Up(self.dataWidth/8))
+        cmd.size = random.randint(0,log2Up(self.dataWidth//8))
         cmd.burst = random.randint(0,2)
         if cmd.burst == 2:
             cmd.len = random.choice([2,4,8,16])-1
@@ -133,13 +133,13 @@ class Axi4SharedMemoryChecker(Infrastructure):
             for i in range(cmd.len+1):
                 dataTrans = Transaction()
                 dataTrans.data = randBits(self.dataWidth)
-                dataTrans.strb = randBits(self.dataWidth/8)
+                dataTrans.strb = randBits(self.dataWidth//8)
                 dataTrans.last = 1 if cmd.len == i else 0
                 self.writeTasks.put(dataTrans)
 
-                for s in range(self.dataWidth/8):
+                for s in range(self.dataWidth//8):
                     if (dataTrans.strb >> s) & 1 == 1:
-                        self.ram[(beatAddr & ~(self.dataWidth/8-1)) + s] = (dataTrans.data >> (s*8)) & 0xFF
+                        self.ram[(beatAddr & ~(self.dataWidth//8-1)) + s] = (dataTrans.data >> (s*8)) & 0xFF
                 beatAddr = Axi4AddrIncr(beatAddr,cmd.burst,cmd.len,cmd.size)
 
             writeRsp = Transaction()
@@ -154,9 +154,9 @@ class Axi4SharedMemoryChecker(Infrastructure):
             beatAddr = cmd.addr
             for s in range(cmd.len + 1):
                 readRsp = Transaction()
-                addrBase = beatAddr & ~(self.dataWidth/8-1)
+                addrBase = beatAddr & ~(self.dataWidth//8-1)
                 readRsp.data = 0
-                for i in range(self.dataWidth / 8):
+                for i in range(self.dataWidth // 8):
                     readRsp.data |= self.ram[addrBase + i] << (i*8)
                 readRsp.resp = 0
                 readRsp.last = 1 if cmd.len == s else 0
