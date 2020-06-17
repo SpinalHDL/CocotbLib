@@ -140,7 +140,7 @@ class AhbLite3Terminaison:
             self.doComb()
 
     def doComb(self):
-        self.ahb.HREADY <= self.randomHREADY and (int(self.ahb.HREADYOUT) == 1)
+        self.ahb.HREADY <= (self.randomHREADY and (int(self.ahb.HREADYOUT) == 1))
 
 
 class AhbLite3MasterReadChecker:
