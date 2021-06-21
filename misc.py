@@ -8,8 +8,14 @@ from cocotb.triggers import Timer, RisingEdge
 
 
 def cocotbXHack():
-    BinaryValue._resolve_to_0     = BinaryValue._resolve_to_0  + BinaryValue._resolve_to_error
-    BinaryValue._resolve_to_error = ""
+    if hasattr(BinaryValue,"_resolve_to_0"):
+        # cocotb <= 1.4.0
+        BinaryValue._resolve_to_0     = BinaryValue._resolve_to_0  + BinaryValue._resolve_to_error
+        BinaryValue._resolve_to_error = ""
+    elif hasattr(cocotb.binary, "resolve_x_to"):
+        # cocotb 1.5.0+
+        cocotb.binary.resolve_x_to = "ZEROS"
+        cocotb.binary._resolve_table = cocotb.binary._ResolveTable()
 
 def log2Up(value):
     return value.bit_length()-1
