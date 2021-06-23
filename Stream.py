@@ -156,7 +156,6 @@ class StreamMonitor:
     @cocotb.coroutine
     def stim(self):
         stream = self.stream
-        stream.valid <= 0
         while True:
             yield RisingEdge(self.clk)
             if int(stream.valid) == 1 and int(stream.ready) == 1:
