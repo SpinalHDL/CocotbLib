@@ -221,7 +221,10 @@ class AhbLite3SlaveMemory:
             if (busy or busyNew) and int(self.ahb.HREADYOUT) == 0 and int(self.ahb.HREADY) == 1:
                 raise TestFailure("HREADYOUT == 0 but HREADY == 1 ??? " + self.ahb.HREADY._name)
             busy = busyNew
-            self.ahb.HREADYOUT <= randomizer.get()
+            if (busy):
+                self.ahb.HREADYOUT <= randomizer.get() # make some random delay for NONSEQ and SEQ requests
+            else:
+                self.ahb.HREADYOUT <= 1 # IDLE and BUSY require 0 WS
 
     @cocotb.coroutine
     def stim(self):
