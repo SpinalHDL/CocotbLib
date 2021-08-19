@@ -42,39 +42,58 @@ class AhbLite3TraficGenerator:
             trans = AhbLite3Transaction()
             return [trans]
         else:
-            burst = random.randint(0,7)
-            if burst == 1:
-                burst = 0
-            burstLength = (1 << (burst >> 1)) << 1
-            wrapped = burst != 1 and burst & 1 == 1
-            incr = burst == 1
+            OneKiB = 1 << 10 # this pesky 1 KiB wall a burst must not cross
+            hSize = random.randint(0,log2Up(self.dataWidth//8))
+            bytesPerBeat = 1 << hSize
+            maxBurst = 5 if hSize == 7 else 7 # a full-width 1024 bit bus can only burst up to 8 beats for not crossing a 1 KiB boundary
+            burst = random.randint(0,maxBurst)
             write = random.random() < 0.5
-            size = 1 << random.randint(0,log2Up(self.dataWidth//8))
             prot = random.randint(0,15)
-            burstSize = (1 << size)*burstLength
+            address = self.genRandomAddress() & ~(bytesPerBeat-1)
 
-            if wrapped:
-                address = self.genRandomAddress() & ~((1 << size)-1)
+            incrUnspecified = burst == 1
+            incrFixed = burst != 1 and burst & 1 == 1
+            wrapFixed = burst & 1 == 0
+
+            if incrUnspecified:
+                maxBeats = (OneKiB - (address % OneKiB)) // bytesPerBeat
+                burstBeats = random.randint(1,maxBeats)
             else:
-                address = self.genRandomAddress() & ~(burstSize - 1)
-            addressBase = address - address % burstSize
+                burstCase = burst >> 1
+                burstBeats = [1,4,8,16][burstCase]
 
+            burstBytes = bytesPerBeat*burstBeats
 
+            while incrFixed and ((address % OneKiB) + burstBytes) > OneKiB:
+                address = address - bytesPerBeat
+
+            addressBase = address - address % burstBytes # for wrapFixed bursts
 
             buffer = []
-            for beat in range(burstLength):
+            for beat in range(burstBeats):
+                if beat > 0:
+                    busyProp = random.random() - 0.8
+                    for busyBeat in range(int(busyProp/0.05)):
+                        trans = AhbLite3Transaction()
+                        trans.HWRITE = write
+                        trans.HSIZE = hSize
+                        trans.HBURST = burst
+                        trans.HPROT = prot
+                        trans.HADDR = address
+                        trans.HTRANS = 1 # BUSY
+                        trans.HWDATA = random.randint(0,(1 << self.dataWidth)-1)
+                        buffer.append(trans)
                 trans = AhbLite3Transaction()
                 trans.HWRITE = write
-                trans.HSIZE = log2Up(size)
+                trans.HSIZE = hSize
                 trans.HBURST = burst
                 trans.HPROT = prot
                 trans.HADDR = address
-                trans.HTRANS = 3
+                trans.HTRANS = 2 if beat == 0 else 3 # first beat is NONSEQ, others are SEQ
                 trans.HWDATA = random.randint(0,(1 << self.dataWidth)-1)
-                address += size
-                if(address == addressBase + burstSize):
+                address += bytesPerBeat
+                if wrapFixed and (address == addressBase + burstBytes):
                     address = addressBase
-                    trans.HTRANS = 2
                 buffer.append(trans)
             return buffer
 
@@ -202,7 +221,10 @@ class AhbLite3SlaveMemory:
             if (busy or busyNew) and int(self.ahb.HREADYOUT) == 0 and int(self.ahb.HREADY) == 1:
                 raise TestFailure("HREADYOUT == 0 but HREADY == 1 ??? " + self.ahb.HREADY._name)
             busy = busyNew
-            self.ahb.HREADYOUT <= randomizer.get()
+            if (busy):
+                self.ahb.HREADYOUT <= randomizer.get() # make some random delay for NONSEQ and SEQ requests
+            else:
+                self.ahb.HREADYOUT <= 1 # IDLE and BUSY require 0 WS
 
     @cocotb.coroutine
     def stim(self):
