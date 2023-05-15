@@ -4,7 +4,7 @@ import cocotb
 from cocotb.result import TestFailure
 from cocotb.triggers import RisingEdge, Edge
 
-from cocotblib.misc import log2Up, BoolRandomizer, assertEquals
+from .misc import log2Up, BoolRandomizer, assertEquals
 
 
 def AhbLite3MasterIdle(ahb):
