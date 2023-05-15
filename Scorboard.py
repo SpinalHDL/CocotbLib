@@ -7,19 +7,19 @@ from .Phase import Infrastructure, PHASE_CHECK_SCORBOARDS
 
 
 class ScorboardInOrder(Infrastructure):
-    def __init__(self,name,parent):
-        Infrastructure.__init__(self,name,parent)
+    def __init__(self, name, parent):
+        Infrastructure.__init__(self, name, parent)
         self.refs = Queue()
         self.uuts = Queue()
         self.refsCounter = 0
         self.uutsCounter = 0
 
-    def refPush(self,ref):
+    def refPush(self, ref):
         self.refs.put(ref)
         self.refsCounter += 1
         self.update()
 
-    def uutPush(self,uut):
+    def uutPush(self, uut):
         self.uuts.put(uut)
         self.uutsCounter += 1
         self.update()
@@ -29,10 +29,9 @@ class ScorboardInOrder(Infrastructure):
             ref = self.refs.get()
             uut = self.uuts.get()
 
-            self.match(uut,ref)
+            self.match(uut, ref)
 
-
-    def match(self,uut,ref):
+    def match(self, uut, ref):
         if not uut.equalRef(ref):
             cocotb._log.error("Missmatch detected in " + self.getPath())
             uut.assertEqualRef(ref)
@@ -50,7 +49,6 @@ class ScorboardInOrder(Infrastructure):
 
                 cocotb._log.error(error)
 
-
     def endPhase(self, phase):
         Infrastructure.endPhase(self, phase)
         if phase == PHASE_CHECK_SCORBOARDS:
@@ -59,17 +57,16 @@ class ScorboardInOrder(Infrastructure):
 
 
 class ScorboardOutOfOrder(Infrastructure):
-    def __init__(self,name,parent):
-        Infrastructure.__init__(self,name,parent)
+    def __init__(self, name, parent):
+        Infrastructure.__init__(self, name, parent)
         self.refsDic = {}
         self.uutsDic = {}
         self.listeners = []
 
-
-    def addListener(self,func):
+    def addListener(self, func):
         self.listeners.append(func)
 
-    def refPush(self,ref,oooid):
+    def refPush(self, ref, oooid):
         if oooid not in self.refsDic:
             self.refsDic[oooid] = Queue()
         self.refsDic[oooid].put(ref)
@@ -81,7 +78,7 @@ class ScorboardOutOfOrder(Infrastructure):
         self.uutsDic[oooid].put(uut)
         self.update(oooid)
 
-    def update(self,oooid):
+    def update(self, oooid):
         if oooid in self.uutsDic and oooid in self.refsDic:
             refs = self.refsDic[oooid]
             uuts = self.uutsDic[oooid]
@@ -89,19 +86,18 @@ class ScorboardOutOfOrder(Infrastructure):
             ref = refs.get()
             uut = uuts.get()
 
-            self.match(uut,ref)
+            self.match(uut, ref)
 
-            #Clean
+            # Clean
             if refs.empty():
                 self.refsDic.pop(oooid)
             if uuts.empty():
                 self.uutsDic.pop(oooid)
 
-
-    def match(self,uut,ref):
+    def match(self, uut, ref):
         equal = uut.equalRef(ref)
         for l in self.listeners:
-            l(uut,ref,equal)
+            l(uut, ref, equal)
 
         if not equal:
             cocotb._log.error("Missmatch detected in " + self.getPath())
@@ -122,10 +118,8 @@ class ScorboardOutOfOrder(Infrastructure):
 
                 cocotb._log.error(error)
 
-
     def endPhase(self, phase):
         Infrastructure.endPhase(self, phase)
         if phase == PHASE_CHECK_SCORBOARDS:
             if len(self.refsDic) != 0 or len(self.uutsDic) != 0:
                 raise TestFailure("Scoreboard not empty")
-
