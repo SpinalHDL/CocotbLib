@@ -11,7 +11,7 @@ PHASE_DONE = 400
 
 
 class Infrastructure:
-    def __init__(self,name,parent):
+    def __init__(self, name, parent):
         self.name = name
         self.parent = parent
         if parent != None:
@@ -41,7 +41,7 @@ class Infrastructure:
         for child in self.children:
             child.endPhase(phase)
 
-    def addChild(self,child):
+    def addChild(self, child):
         if child not in self.children:
             self.children.append(child)
 
@@ -60,7 +60,7 @@ class PhaseManager(Infrastructure):
         self.waitTasksEndTime = 0
         # setSimManager(self)
 
-    def setWaitTasksEndTime(self,value):
+    def setWaitTasksEndTime(self, value):
         self.waitTasksEndTime = value
 
     @coroutine
@@ -73,7 +73,7 @@ class PhaseManager(Infrastructure):
     def getPhase(self):
         return self.phase
 
-    def switchPhase(self,phase):
+    def switchPhase(self, phase):
         for infra in self.children:
             infra.endPhase(self.phase)
         self.phase = phase
@@ -90,6 +90,7 @@ class PhaseManager(Infrastructure):
         self.switchPhase(PHASE_CHECK_SCORBOARDS)
         self.switchPhase(PHASE_DONE)
 
+
 # _simManager = None
 #
 # def getSimManager():
@@ -99,6 +100,3 @@ class PhaseManager(Infrastructure):
 #     global _simManager
 #     _simManager = that
 #
-
-
-
