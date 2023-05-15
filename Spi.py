@@ -5,8 +5,8 @@ from cocotb.decorators import coroutine
 from cocotb.result import TestFailure, ReturnValue
 from cocotb.triggers import RisingEdge, Edge, Timer
 
-from cocotblib.TriState import TriStateOutput
-from cocotblib.misc import log2Up, BoolRandomizer, assertEquals, testBit
+from .TriState import TriStateOutput
+from .misc import log2Up, BoolRandomizer, assertEquals, testBit
 
 
 class SpiMaster:
