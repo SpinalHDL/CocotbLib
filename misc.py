@@ -46,7 +46,7 @@ def randBoolSignal(that, prob):
 def clockedWaitTrue(clk, that):
     while True:
         yield RisingEdge(clk)
-        if that == True:
+        if that is True:
             break
 
 
