@@ -62,7 +62,7 @@ class Transaction(object):
         #     return False
         for name in self._nameToElement:
             refValue = getattr(ref, name)
-            if refValue != None and self._nameToElement[name] != getattr(ref, name):
+            if refValue is not None and self._nameToElement[name] != getattr(ref, name):
                 return False
         return True
 
@@ -78,7 +78,7 @@ class Transaction(object):
                 biggerName = len(n)
         for name in self._nameToElement:
             e = self._nameToElement[name]
-            buffer += "%s %s: 0x%x\n" % (name, " "*(biggerName-len(name)), 0 if e == None else e)
+            buffer += "%s %s: 0x%x\n" % (name, " "*(biggerName-len(name)), 0 if e is None else e)
         return buffer
 
 # Transaction = type('Transaction', (object,), {})
@@ -104,12 +104,12 @@ class StreamDriverMaster:
                 for i in range(nextDelay):
                     yield RisingEdge(self.clk)
 
-            if self.transactor != None and (int(stream.valid) == 0 or int(stream.ready) == 1):
+            if self.transactor is not None and (int(stream.valid) == 0 or int(stream.ready) == 1):
                 if isinstance(self.transactor, types.GeneratorType):
                     trans = next(self.transactor)
                 else:
                     trans = self.transactor()
-                if trans != None:
+                if trans is not None:
                     if hasattr(trans, "nextDelay"):
                         nextDelay = trans.nextDelay
                     else:
