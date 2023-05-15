@@ -1,13 +1,14 @@
 
-import cocotb
 import types
+
+import cocotb
 from cocotb.result import TestFailure
 from cocotb.triggers import RisingEdge, Timer, Event
+from cocotb.decorators import coroutine
+
 from .Phase import Infrastructure, PHASE_WAIT_TASKS_END
 from .Scorboard import ScorboardInOrder
-
 from .misc import Bundle, BoolRandomizer
-
 
 class Stream:
     def __init__(self, dut, name):
@@ -30,14 +31,14 @@ class Stream:
         self.fork_ready.kill()
         self.fork_valid.kill()
 
-    @cocotb.coroutine
+    @coroutine
     def monitor_ready(self):
         while True:
             yield RisingEdge(self.clk)
             if int(self.ready) == 1:
                 self.event_ready.set( self.payload )
 
-    @cocotb.coroutine
+    @coroutine
     def monitor_valid(self):
         while True:
             yield RisingEdge(self.clk)
@@ -91,7 +92,7 @@ class StreamDriverMaster:
 
         cocotb.start_soon(self.stim())
 
-    @cocotb.coroutine
+    @coroutine
     def stim(self):
         stream = self.stream
         stream.valid.value = 0
@@ -129,7 +130,7 @@ class StreamDriverSlave:
         self.randomizer = BoolRandomizer()
         cocotb.start_soon(self.stim())
 
-    @cocotb.coroutine
+    @coroutine
     def stim(self):
         stream = self.stream
         stream.ready.value = 1
@@ -153,7 +154,7 @@ class StreamMonitor:
         self.reset = reset
         cocotb.start_soon(self.stim())
 
-    @cocotb.coroutine
+    @coroutine
     def stim(self):
         stream = self.stream
         while True:
