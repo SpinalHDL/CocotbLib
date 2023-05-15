@@ -14,21 +14,15 @@ class SpiMaster:
         self.sclk = dut.__getattr__(name + "_sclk")
         self.mosi = dut.__getattr__(name + "_mosi")
         self.miso = dut.__getattr__(name + "_miso")
-        self.ss   = dut.__getattr__(name + "_ss")
-
-
-
+        self.ss = dut.__getattr__(name + "_ss")
 
 
 class SpiSlave:
     def __init__(self, dut, name):
         self.sclk = dut.__getattr__(name + "_sclk")
         self.mosi = dut.__getattr__(name + "_mosi")
-        self.miso   = TriStateOutput(dut,name + "_miso")
+        self.miso = TriStateOutput(dut, name + "_miso")
         self.ss = dut.__getattr__(name + "_ss")
-
-
-
 
 
 class SpiSlaveMaster:
@@ -39,7 +33,7 @@ class SpiSlaveMaster:
         self.baudPeriode = 1000
         self.dataWidth = 8
 
-    def init(self, cpol, cpha, baudrate, dataWidth = 8):
+    def init(self, cpol, cpha, baudrate, dataWidth=8):
         self.spi.ss.value = True
         self.cpol = cpol
         self.cpha = cpha
@@ -71,7 +65,7 @@ class SpiSlaveMaster:
                 self.spi.sclk.value = (self.cpol)
         else:
             for i in range(self.dataWidth):
-                self.spi.mosi.value = testBit(masterData, self.dataWidth -1  - i)
+                self.spi.mosi.value = testBit(masterData, self.dataWidth - 1 - i)
                 self.spi.sclk.value = (not self.cpol)
                 yield Timer(self.baudPeriode >> 1)
                 buffer = buffer + str(self.spi.miso.write) if bool(self.spi.miso.writeEnable) else "x"
@@ -84,4 +78,4 @@ class SpiSlaveMaster:
     def exchangeCheck(self, masterData, slaveData):
         c = self.exchange(masterData)
         yield c
-        assert slaveData == int(c.retval,2)
+        assert slaveData == int(c.retval, 2)
