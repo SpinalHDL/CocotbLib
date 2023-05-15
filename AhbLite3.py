@@ -37,21 +37,23 @@ class AhbLite3TraficGenerator:
         self.dataWidth = dataWidth
 
     def genRandomAddress(self):
-        return random.randint(0, (1 << self.addressWidth)-1)
+        return random.randint(0, (1 << self.addressWidth) - 1)
 
     def getTransactions(self):
         if random.random() < 0.8:
             trans = AhbLite3Transaction()
             return [trans]
         else:
-            OneKiB = 1 << 10 # this pesky 1 KiB wall a burst must not cross
-            hSize = random.randint(0, log2Up(self.dataWidth//8))
+            OneKiB = 1 << 10  # this pesky 1 KiB wall a burst must not cross
+            hSize = random.randint(0, log2Up(self.dataWidth // 8))
             bytesPerBeat = 1 << hSize
-            maxBurst = 5 if hSize == 7 else 7  # a full-width 1024 bit bus can only burst up to 8 beats for not crossing a 1 KiB boundary
+            maxBurst = (
+                5 if hSize == 7 else 7
+            )  # a full-width 1024 bit bus can only burst up to 8 beats for not crossing a 1 KiB boundary
             burst = random.randint(0, maxBurst)
             write = random.random() < 0.5
             prot = random.randint(0, 15)
-            address = self.genRandomAddress() & ~(bytesPerBeat-1)
+            address = self.genRandomAddress() & ~(bytesPerBeat - 1)
 
             incrUnspecified = burst == 1
             incrFixed = burst != 1 and burst & 1 == 1
@@ -64,7 +66,7 @@ class AhbLite3TraficGenerator:
                 burstCase = burst >> 1
                 burstBeats = [1, 4, 8, 16][burstCase]
 
-            burstBytes = bytesPerBeat*burstBeats
+            burstBytes = bytesPerBeat * burstBeats
 
             while incrFixed and ((address % OneKiB) + burstBytes) > OneKiB:
                 address = address - bytesPerBeat
@@ -75,7 +77,7 @@ class AhbLite3TraficGenerator:
             for beat in range(burstBeats):
                 if beat > 0:
                     busyProp = random.random() - 0.8
-                    for busyBeat in range(int(busyProp/0.05)):
+                    for busyBeat in range(int(busyProp / 0.05)):
                         trans = AhbLite3Transaction()
                         trans.HWRITE = write
                         trans.HSIZE = hSize
@@ -83,7 +85,7 @@ class AhbLite3TraficGenerator:
                         trans.HPROT = prot
                         trans.HADDR = address
                         trans.HTRANS = 1  # BUSY
-                        trans.HWDATA = random.randint(0, (1 << self.dataWidth)-1)
+                        trans.HWDATA = random.randint(0, (1 << self.dataWidth) - 1)
                         buffer.append(trans)
                 trans = AhbLite3Transaction()
                 trans.HWRITE = write
@@ -92,7 +94,7 @@ class AhbLite3TraficGenerator:
                 trans.HPROT = prot
                 trans.HADDR = address
                 trans.HTRANS = 2 if beat == 0 else 3  # first beat is NONSEQ, others are SEQ
-                trans.HWDATA = random.randint(0, (1 << self.dataWidth)-1)
+                trans.HWDATA = random.randint(0, (1 << self.dataWidth) - 1)
                 address += bytesPerBeat
                 if wrapFixed and (address == addressBase + burstBytes):
                     address = addressBase
@@ -163,7 +165,7 @@ class AhbLite3Terminaison:
             self.doComb()
 
     def doComb(self):
-        self.ahb.HREADY.value = (self.randomHREADY and (int(self.ahb.HREADYOUT) == 1))
+        self.ahb.HREADY.value = self.randomHREADY and (int(self.ahb.HREADYOUT) == 1)
 
 
 class AhbLite3MasterReadChecker:
@@ -187,8 +189,12 @@ class AhbLite3MasterReadChecker:
                         raise TestFailure("Empty buffer ??? ")
 
                     bufferData = self.buffer.get()
-                    for i in range(byteOffset,byteOffset + size):
-                        assertEquals((int(ahb.HRDATA) >> (i*8)) & 0xFF, (bufferData >> (i*8)) & 0xFF, "AHB master read checker faild %x " % (int(ahb.HADDR)))
+                    for i in range(byteOffset, byteOffset + size):
+                        assertEquals(
+                            (int(ahb.HRDATA) >> (i * 8)) & 0xFF,
+                            (bufferData >> (i * 8)) & 0xFF,
+                            "AHB master read checker faild %x " % (int(ahb.HADDR)),
+                        )
 
                     self.counter += 1
                     # cocotb._log.info("POP " + str(self.buffer.qsize()))
@@ -205,7 +211,7 @@ class AhbLite3SlaveMemory:
         self.reset = reset
         self.base = base
         self.size = size
-        self.ram = bytearray(b'\x00' * size)
+        self.ram = bytearray(b"\x00" * size)
 
         cocotb.start_soon(self.stim())
         cocotb.start_soon(self.stimReady())
@@ -224,7 +230,7 @@ class AhbLite3SlaveMemory:
             if (busy or busyNew) and int(self.ahb.HREADYOUT) == 0 and int(self.ahb.HREADY) == 1:
                 raise TestFailure("HREADYOUT == 0 but HREADY == 1 ??? " + self.ahb.HREADY._name)
             busy = busyNew
-            if (busy):
+            if busy:
                 self.ahb.HREADYOUT.value = randomizer.get()  # make some random delay for NONSEQ and SEQ requests
             else:
                 self.ahb.HREADYOUT.value = 1  # IDLE and BUSY require 0 WS
@@ -245,7 +251,7 @@ class AhbLite3SlaveMemory:
                 if trans >= 2:
                     if write == 1:
                         for idx in range(size):
-                            self.ram[address-self.base + idx] = (int(ahb.HWDATA) >> (8*(addressOffset + idx))) & 0xFF
+                            self.ram[address - self.base + idx] = (int(ahb.HWDATA) >> (8 * (addressOffset + idx))) & 0xFF
                             # print("write %x with %x" % (address + idx,(int(ahb.HWDATA) >> (8*(addressOffset + idx))) & 0xFF))
 
             valid = int(ahb.HSEL)
@@ -253,7 +259,7 @@ class AhbLite3SlaveMemory:
             write = int(ahb.HWRITE)
             size = 1 << int(ahb.HSIZE)
             address = int(ahb.HADDR)
-            addressOffset = address % (len(ahb.HWDATA)//8)
+            addressOffset = address % (len(ahb.HWDATA) // 8)
 
             ahb.HRDATA.value = 0
             if valid == 1:
@@ -261,7 +267,7 @@ class AhbLite3SlaveMemory:
                     if write == 0:
                         data = 0
                         for idx in range(size):
-                            data |= self.ram[address-self.base + idx] << (8*(addressOffset + idx))
+                            data |= self.ram[address - self.base + idx] << (8 * (addressOffset + idx))
                             # print("read %x with %x" % (address + idx, self.ram[address-self.base + idx]))
                         # print(str(data))
                         ahb.HRDATA.value = int(data)
