@@ -1,5 +1,7 @@
 import cocotb
 from cocotb.triggers import RisingEdge, Event
+from cocotb.decorators import coroutine
+
 from .misc import Bundle
 
 
@@ -39,7 +41,7 @@ class Flow:
     #==========================================================================
     # Monitor the valid signal
     #==========================================================================
-    @cocotb.coroutine
+    @coroutine
     def monitor_valid(self):
         while True:
             yield RisingEdge(self.clk)
