@@ -14,7 +14,7 @@ class Infrastructure:
     def __init__(self, name, parent):
         self.name = name
         self.parent = parent
-        if parent != None:
+        if parent is not None:
             parent.addChild(self)
         self.children = []
 
@@ -46,7 +46,7 @@ class Infrastructure:
             self.children.append(child)
 
     def getPath(self):
-        if self.parent != None:
+        if self.parent is not None:
             return self.parent.getPath() + "/" + self.name
         else:
             return self.name
