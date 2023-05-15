@@ -1,5 +1,6 @@
 import cocotb
 from cocotb.triggers import Timer, RisingEdge, Event
+from cocotb.decorators import coroutine
 
 
 ###############################################################################
@@ -42,7 +43,7 @@ class ClockDomain:
 
     ##########################################################################
     # Generate the clock signals
-    @cocotb.coroutine
+    @coroutine
     def start(self):
 
         self.fork_gen = cocotb.start_soon(self._clkGen())
@@ -67,7 +68,7 @@ class ClockDomain:
 
     ##########################################################################
     # Generate the clk
-    @cocotb.coroutine
+    @coroutine
     def _clkGen(self):
         while True:
             self.clk.value = 0
@@ -78,7 +79,7 @@ class ClockDomain:
 
     ##########################################################################
     # Wait the end of the reset
-    @cocotb.coroutine
+    @coroutine
     def _waitEndReset(self):
         while True:
             yield RisingEdge(self.clk)
