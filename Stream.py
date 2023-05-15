@@ -20,11 +20,11 @@ class Stream:
 
     def startMonitoringReady(self, clk):
         self.clk  = clk
-        self.fork_ready = cocotb.fork(self.monitor_ready())
+        self.fork_ready = cocotb.start_soon(self.monitor_ready())
 
     def startMonitoringValid(self, clk):
         self.clk  = clk
-        self.fork_valid = cocotb.fork(self.monitor_valid())
+        self.fork_valid = cocotb.start_soon(self.monitor_valid())
 
     def stopMonitoring(self):
         self.fork_ready.kill()
@@ -89,7 +89,7 @@ class StreamDriverMaster:
         self.reset = reset
         self.transactor = transactor
 
-        cocotb.fork(self.stim())
+        cocotb.start_soon(self.stim())
 
     @cocotb.coroutine
     def stim(self):
@@ -127,7 +127,7 @@ class StreamDriverSlave:
         self.clk = clk
         self.reset = reset
         self.randomizer = BoolRandomizer()
-        cocotb.fork(self.stim())
+        cocotb.start_soon(self.stim())
 
     @cocotb.coroutine
     def stim(self):
@@ -151,7 +151,7 @@ class StreamMonitor:
         self.callback = callback
         self.clk = clk
         self.reset = reset
-        cocotb.fork(self.stim())
+        cocotb.start_soon(self.stim())
 
     @cocotb.coroutine
     def stim(self):
