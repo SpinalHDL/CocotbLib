@@ -1,11 +1,11 @@
 import random
 from queue import Queue
 
-from cocotblib.Phase import PHASE_SIM, Infrastructure
-from cocotblib.Scorboard import ScorboardOutOfOrder
-from cocotblib.misc import BoolRandomizer, log2Up, randBits
+from .Phase import PHASE_SIM, Infrastructure
+from .Scorboard import ScorboardOutOfOrder
+from .misc import BoolRandomizer, log2Up, randBits
 
-from cocotblib.Stream import Stream, Transaction, StreamDriverSlave, StreamDriverMaster, StreamMonitor
+from .Stream import Stream, Transaction, StreamDriverSlave, StreamDriverMaster, StreamMonitor
 
 
 class Axi4:
