@@ -19,7 +19,6 @@ def AhbLite3MasterIdle(ahb):
     ahb.HWDATA.value = 0
 
 
-
 class AhbLite3Transaction:
     def __init__(self):
         self.HADDR     = 0
@@ -31,12 +30,14 @@ class AhbLite3Transaction:
         self.HMASTLOCK = 0
         self.HWDATA    = 0
 
+
 class AhbLite3TraficGenerator:
-    def __init__(self,addressWidth,dataWidth):
+    def __init__(self, addressWidth, dataWidth):
         self.addressWidth = addressWidth
         self.dataWidth = dataWidth
+
     def genRandomAddress(self):
-        return random.randint(0,(1 << self.addressWidth)-1)
+        return random.randint(0, (1 << self.addressWidth)-1)
 
     def getTransactions(self):
         if random.random() < 0.8:
@@ -44,12 +45,12 @@ class AhbLite3TraficGenerator:
             return [trans]
         else:
             OneKiB = 1 << 10 # this pesky 1 KiB wall a burst must not cross
-            hSize = random.randint(0,log2Up(self.dataWidth//8))
+            hSize = random.randint(0, log2Up(self.dataWidth//8))
             bytesPerBeat = 1 << hSize
-            maxBurst = 5 if hSize == 7 else 7 # a full-width 1024 bit bus can only burst up to 8 beats for not crossing a 1 KiB boundary
-            burst = random.randint(0,maxBurst)
+            maxBurst = 5 if hSize == 7 else 7  # a full-width 1024 bit bus can only burst up to 8 beats for not crossing a 1 KiB boundary
+            burst = random.randint(0, maxBurst)
             write = random.random() < 0.5
-            prot = random.randint(0,15)
+            prot = random.randint(0, 15)
             address = self.genRandomAddress() & ~(bytesPerBeat-1)
 
             incrUnspecified = burst == 1
@@ -58,17 +59,17 @@ class AhbLite3TraficGenerator:
 
             if incrUnspecified:
                 maxBeats = (OneKiB - (address % OneKiB)) // bytesPerBeat
-                burstBeats = random.randint(1,maxBeats)
+                burstBeats = random.randint(1, maxBeats)
             else:
                 burstCase = burst >> 1
-                burstBeats = [1,4,8,16][burstCase]
+                burstBeats = [1, 4, 8, 16][burstCase]
 
             burstBytes = bytesPerBeat*burstBeats
 
             while incrFixed and ((address % OneKiB) + burstBytes) > OneKiB:
                 address = address - bytesPerBeat
 
-            addressBase = address - address % burstBytes # for wrapFixed bursts
+            addressBase = address - address % burstBytes  # for wrapFixed bursts
 
             buffer = []
             for beat in range(burstBeats):
@@ -81,8 +82,8 @@ class AhbLite3TraficGenerator:
                         trans.HBURST = burst
                         trans.HPROT = prot
                         trans.HADDR = address
-                        trans.HTRANS = 1 # BUSY
-                        trans.HWDATA = random.randint(0,(1 << self.dataWidth)-1)
+                        trans.HTRANS = 1  # BUSY
+                        trans.HWDATA = random.randint(0, (1 << self.dataWidth)-1)
                         buffer.append(trans)
                 trans = AhbLite3Transaction()
                 trans.HWRITE = write
@@ -90,16 +91,17 @@ class AhbLite3TraficGenerator:
                 trans.HBURST = burst
                 trans.HPROT = prot
                 trans.HADDR = address
-                trans.HTRANS = 2 if beat == 0 else 3 # first beat is NONSEQ, others are SEQ
-                trans.HWDATA = random.randint(0,(1 << self.dataWidth)-1)
+                trans.HTRANS = 2 if beat == 0 else 3  # first beat is NONSEQ, others are SEQ
+                trans.HWDATA = random.randint(0, (1 << self.dataWidth)-1)
                 address += bytesPerBeat
                 if wrapFixed and (address == addressBase + burstBytes):
                     address = addressBase
                 buffer.append(trans)
             return buffer
 
+
 class AhbLite3MasterDriver:
-    def __init__(self,ahb,transactor,clk,reset):
+    def __init__(self, ahb, transactor, clk, reset):
         self.ahb = ahb
         self.clk = clk
         self.reset = reset
@@ -134,8 +136,9 @@ class AhbLite3MasterDriver:
                 ahb.HWDATA.value = HWDATAbuffer
                 HWDATAbuffer = trans.HWDATA
 
+
 class AhbLite3Terminaison:
-    def __init__(self,ahb,clk,reset):
+    def __init__(self, ahb, clk, reset):
         self.ahb = ahb
         self.clk = clk
         self.reset = reset
@@ -164,7 +167,7 @@ class AhbLite3Terminaison:
 
 
 class AhbLite3MasterReadChecker:
-    def __init__(self,ahb,buffer,clk,reset):
+    def __init__(self, ahb, buffer, clk, reset):
         self.ahb = ahb
         self.clk = clk
         self.reset = reset
@@ -185,7 +188,7 @@ class AhbLite3MasterReadChecker:
 
                     bufferData = self.buffer.get()
                     for i in range(byteOffset,byteOffset + size):
-                        assertEquals((int(ahb.HRDATA) >> (i*8)) & 0xFF,(bufferData >> (i*8)) & 0xFF,"AHB master read checker faild %x "  %(int(ahb.HADDR)) )
+                        assertEquals((int(ahb.HRDATA) >> (i*8)) & 0xFF, (bufferData >> (i*8)) & 0xFF, "AHB master read checker faild %x " % (int(ahb.HADDR)))
 
                     self.counter += 1
                     # cocotb._log.info("POP " + str(self.buffer.qsize()))
@@ -195,9 +198,8 @@ class AhbLite3MasterReadChecker:
                 byteOffset = int(ahb.HADDR) % (len(ahb.HWDATA) // 8)
 
 
-
 class AhbLite3SlaveMemory:
-    def __init__(self,ahb,base,size,clk,reset):
+    def __init__(self, ahb, base, size, clk, reset):
         self.ahb = ahb
         self.clk = clk
         self.reset = reset
@@ -243,7 +245,7 @@ class AhbLite3SlaveMemory:
                 if trans >= 2:
                     if write == 1:
                         for idx in range(size):
-                            self.ram[address-self.base  + idx] = (int(ahb.HWDATA) >> (8*(addressOffset + idx))) & 0xFF
+                            self.ram[address-self.base + idx] = (int(ahb.HWDATA) >> (8*(addressOffset + idx))) & 0xFF
                             # print("write %x with %x" % (address + idx,(int(ahb.HWDATA) >> (8*(addressOffset + idx))) & 0xFF))
 
             valid = int(ahb.HSEL)
