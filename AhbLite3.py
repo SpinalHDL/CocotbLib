@@ -195,7 +195,7 @@ class AhbLite3MasterReadChecker:
                         assertEquals(
                             (int(ahb.HRDATA) >> (i * 8)) & 0xFF,
                             (bufferData >> (i * 8)) & 0xFF,
-                            "AHB master read checker faild %x " % (int(ahb.HADDR)),
+                            "AHB master read checker failed %x " % (int(ahb.HADDR)),
                         )
 
                     self.counter += 1
