@@ -1,6 +1,7 @@
 import cocotb
 from cocotb.triggers import Timer, RisingEdge, Event
 from cocotb.decorators import coroutine
+from cocotb.utils import get_time_from_sim_steps
 
 
 ###############################################################################
@@ -30,6 +31,7 @@ class ClockDomain:
     # @param resetactiveLevel : Reset active low or high
     def __init__(self, clk, halfPeriod, reset=None, resetActiveLevel=RESET_ACTIVE_LEVEL.LOW):
         self.halfPeriod = halfPeriod
+        self.frequency = 1 / get_time_from_sim_steps(halfPeriod * 2, units="us")
 
         self.clk = clk
         self.reset = reset
