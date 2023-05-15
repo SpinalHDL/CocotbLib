@@ -188,7 +188,7 @@ class AhbLite3MasterReadChecker:
                         assertEquals((int(ahb.HRDATA) >> (i*8)) & 0xFF,(bufferData >> (i*8)) & 0xFF,"AHB master read checker faild %x "  %(int(ahb.HADDR)) )
 
                     self.counter += 1
-                    # cocotb.log.info("POP " + str(self.buffer.qsize()))
+                    # cocotb._log.info("POP " + str(self.buffer.qsize()))
 
                 readIncoming = int(ahb.HTRANS) >= 2 and int(ahb.HWRITE) == 0
                 size = 1 << int(ahb.HSIZE)
