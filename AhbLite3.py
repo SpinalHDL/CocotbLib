@@ -103,7 +103,7 @@ class AhbLite3MasterDriver:
         self.clk = clk
         self.reset = reset
         self.transactor = transactor
-        cocotb.fork(self.stim())
+        cocotb.start_soon(self.stim())
 
     @cocotb.coroutine
     def stim(self):
@@ -139,8 +139,8 @@ class AhbLite3Terminaison:
         self.clk = clk
         self.reset = reset
         self.randomHREADY = True
-        cocotb.fork(self.stim())
-        cocotb.fork(self.combEvent())
+        cocotb.start_soon(self.stim())
+        cocotb.start_soon(self.combEvent())
 
     @cocotb.coroutine
     def stim(self):
@@ -169,7 +169,7 @@ class AhbLite3MasterReadChecker:
         self.reset = reset
         self.buffer = buffer
         self.counter = 0
-        cocotb.fork(self.stim())
+        cocotb.start_soon(self.stim())
 
     @cocotb.coroutine
     def stim(self):
@@ -204,8 +204,8 @@ class AhbLite3SlaveMemory:
         self.size = size
         self.ram = bytearray(b'\x00' * size)
 
-        cocotb.fork(self.stim())
-        cocotb.fork(self.stimReady())
+        cocotb.start_soon(self.stim())
+        cocotb.start_soon(self.stimReady())
 
     @cocotb.coroutine
     def stimReady(self):
