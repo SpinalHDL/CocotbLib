@@ -180,6 +180,8 @@ class AhbLite3MasterReadChecker:
     @coroutine
     def stim(self):
         ahb = self.ahb
+        size = 0
+        byteOffset = 0
         readIncoming = False
         while True:
             yield RisingEdge(self.clk)
@@ -241,6 +243,11 @@ class AhbLite3SlaveMemory:
         ahb.HREADYOUT.value = 1
         ahb.HRESP.value = 0
         ahb.HRDATA.value = 0
+        addressOffset = 0
+        address = 0
+        trans = 0
+        size = 0
+        write = 0
         valid = 0
         while True:
             yield RisingEdge(self.clk)
