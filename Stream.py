@@ -10,21 +10,22 @@ from .Phase import Infrastructure, PHASE_WAIT_TASKS_END
 from .Scorboard import ScorboardInOrder
 from .misc import Bundle, BoolRandomizer
 
+
 class Stream:
     def __init__(self, dut, name):
-        self.valid   = dut.__getattr__(name + "_valid")
-        self.ready   = dut.__getattr__(name + "_ready")
-        self.payload = Bundle(dut,name + "_payload")
+        self.valid = dut.__getattr__(name + "_valid")
+        self.ready = dut.__getattr__(name + "_ready")
+        self.payload = Bundle(dut, name + "_payload")
         # Event
         self.event_ready = Event()
         self.event_valid = Event()
 
     def startMonitoringReady(self, clk):
-        self.clk  = clk
+        self.clk = clk
         self.fork_ready = cocotb.start_soon(self.monitor_ready())
 
     def startMonitoringValid(self, clk):
-        self.clk  = clk
+        self.clk = clk
         self.fork_valid = cocotb.start_soon(self.monitor_valid())
 
     def stopMonitoring(self):
@@ -36,39 +37,38 @@ class Stream:
         while True:
             yield RisingEdge(self.clk)
             if int(self.ready) == 1:
-                self.event_ready.set( self.payload )
+                self.event_ready.set(self.payload)
 
     @coroutine
     def monitor_valid(self):
         while True:
             yield RisingEdge(self.clk)
             if int(self.valid) == 1:
-                self.event_valid.set( self.payload )
+                self.event_valid.set(self.payload)
 
 
 class Transaction(object):
     def __init__(self):
-        object.__setattr__(self,"_nameToElement",{})
+        object.__setattr__(self, "_nameToElement", {})
 
     def __setattr__(self, key, value):
         # print("set " + key)
         if key[0] != '_':
             self._nameToElement[key] = value
-        object.__setattr__(self,key,value)
+        object.__setattr__(self, key, value)
 
-    def equalRef(self,ref):
+    def equalRef(self, ref):
         # if(len(self._nameToElement) != len(ref._nameToElement)):
         #     return False
         for name in self._nameToElement:
-            refValue = getattr(ref,name)
-            if refValue != None and self._nameToElement[name] != getattr(ref,name):
+            refValue = getattr(ref, name)
+            if refValue != None and self._nameToElement[name] != getattr(ref, name):
                 return False
         return True
 
-    def assertEqualRef(self,ref):
+    def assertEqualRef(self, ref):
         if not self.equalRef(ref):
-            raise TestFailure("\nFAIL transaction not equal\ntransaction =>\n%s\nref =>\n%s\n\n" % (self,ref))
-
+            raise TestFailure("\nFAIL transaction not equal\ntransaction =>\n%s\nref =>\n%s\n\n" % (self, ref))
 
     def __str__(self):
         buffer = ""
@@ -78,13 +78,14 @@ class Transaction(object):
                 biggerName = len(n)
         for name in self._nameToElement:
             e = self._nameToElement[name]
-            buffer += "%s %s: 0x%x\n" % (name," "*(biggerName-len(name)), 0 if e == None else e)
+            buffer += "%s %s: 0x%x\n" % (name, " "*(biggerName-len(name)), 0 if e == None else e)
         return buffer
 
 # Transaction = type('Transaction', (object,), {})
 
+
 class StreamDriverMaster:
-    def __init__(self,stream,transactor,clk,reset):
+    def __init__(self, stream, transactor, clk, reset):
         self.stream = stream
         self.clk = clk
         self.reset = reset
@@ -104,26 +105,25 @@ class StreamDriverMaster:
                     yield RisingEdge(self.clk)
 
             if self.transactor != None and (int(stream.valid) == 0 or int(stream.ready) == 1):
-                if isinstance(self.transactor,types.GeneratorType):
+                if isinstance(self.transactor, types.GeneratorType):
                     trans = next(self.transactor)
                 else:
                     trans = self.transactor()
                 if trans != None:
-                    if hasattr(trans,"nextDelay"):
+                    if hasattr(trans, "nextDelay"):
                         nextDelay = trans.nextDelay
                     else:
                         nextDelay = 0
                     stream.valid.value = 1
 
                     for name in stream.payload.nameToElement:
-                        if hasattr(trans,name) == False:
+                        if hasattr(trans, name) == False:
                             raise Exception("Missing element in bundle :" + name)
-                        e = stream.payload.nameToElement[name].value = getattr(trans,name)
-
+                        e = stream.payload.nameToElement[name].value = getattr(trans, name)
 
 
 class StreamDriverSlave:
-    def __init__(self,stream,clk,reset):
+    def __init__(self, stream, clk, reset):
         self.stream = stream
         self.clk = clk
         self.reset = reset
@@ -142,12 +142,12 @@ class StreamDriverSlave:
 def TransactionFromBundle(bundle):
     trans = Transaction()
     for name in bundle.nameToElement:
-        setattr(trans,name, int(bundle.nameToElement[name]))
+        setattr(trans, name, int(bundle.nameToElement[name]))
     return trans
 
 
 class StreamMonitor:
-    def __init__(self,stream,callback,clk,reset):
+    def __init__(self, stream, callback, clk, reset):
         self.stream = stream
         self.callback = callback
         self.clk = clk
@@ -165,11 +165,9 @@ class StreamMonitor:
                 self.callback(trans)
 
 
-
-
 class StreamFifoTester(Infrastructure):
-    def __init__(self,name,parent,pushStream,popStream,transactionGenerator,dutCounterTarget,clk,reset):
-        Infrastructure.__init__(self,name,parent)
+    def __init__(self, name, parent, pushStream, popStream, transactionGenerator, dutCounterTarget, clk, reset):
+        Infrastructure.__init__(self, name, parent)
         self.pushStream = pushStream
         self.popStream = popStream
         self.clk = clk
@@ -205,5 +203,3 @@ class StreamFifoTester(Infrastructure):
 
     def canPhaseProgress(self, phase):
         return self.dutCounter > self.dutCounterTarget
-
-
