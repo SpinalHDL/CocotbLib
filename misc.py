@@ -20,7 +20,7 @@ def cocotbXHack():
 
 
 def log2Up(value):
-    return value.bit_length()-1
+    return value.bit_length() - 1
 
 
 def randInt(lower, upper):
@@ -40,7 +40,7 @@ def randSignal(that):
 
 
 def randBoolSignal(that, prob):
-    that.value = (random.random() < prob)
+    that.value = random.random() < prob
 
 
 @coroutine
@@ -58,7 +58,7 @@ def assertEquals(a, b, name):
 
 def truncUInt(value, signal):
     if isinstance(signal, int):
-        return value & ((1 << signal)-1)
+        return value & ((1 << signal) - 1)
     else:
         return value & ((1 << len(signal)) - 1)
 
@@ -68,9 +68,9 @@ def truncSInt(value, signal):
         bitCount = signal
     else:
         bitCount = len(signal)
-    masked = value & ((1 << bitCount)-1)
-    if (masked & (1 << bitCount-1)) != 0:
-        return - (1 << bitCount) + masked
+    masked = value & ((1 << bitCount) - 1)
+    if (masked & (1 << bitCount - 1)) != 0:
+        return -(1 << bitCount) + masked
     else:
         return masked
 
@@ -106,9 +106,9 @@ def ClockDomainAsyncReset(clk, reset, period=1000):
         reset.value = 0
     while True:
         clk.value = 0
-        yield Timer(period/2)
+        yield Timer(period / 2)
         clk.value = 1
-        yield Timer(period/2)
+        yield Timer(period / 2)
 
 
 @coroutine
@@ -127,7 +127,7 @@ def simulationSpeedPrinter(clk):
         thisTime = time.time()
         if thisTime - lastTime >= 1.0:
             lastTime = thisTime
-            print("Sim speed : %f khz" % (counter/1000.0))
+            print("Sim speed : %f khz" % (counter / 1000.0))
             counter = 0
 
 
@@ -155,7 +155,7 @@ class BoolRandomizer:
 #             self.payload = payloads[0]
 
 
-MyObject = type('MyObject', (object,), {})
+MyObject = type("MyObject", (object,), {})
 
 
 @coroutine
@@ -182,7 +182,7 @@ def StreamRandomizer(streamName, onNew, handle, dut, clk):
                 else:
                     payload = MyObject()
                     for e in payloads:
-                        payload.__setattr__(e._name[len(streamName + "_payload_"):], int(e))
+                        payload.__setattr__(e._name[len(streamName + "_payload_") :], int(e))
                 if onNew:
                     onNew(payload, handle)
 
@@ -206,7 +206,7 @@ def FlowRandomizer(streamName, onNew, handle, dut, clk):
             else:
                 payload = MyObject()
                 for e in payloads:
-                    payload.__setattr__(e._name[len(streamName + "_payload_"):], int(e))
+                    payload.__setattr__(e._name[len(streamName + "_payload_") :], int(e))
             if onNew:
                 onNew(payload, handle)
         else:
@@ -230,7 +230,7 @@ def StreamReader(streamName, onTransaction, handle, dut, clk):
             else:
                 payload = MyObject()
                 for e in payloads:
-                    payload.__setattr__(e._name[len(streamName + "_payload_"):], int(e))
+                    payload.__setattr__(e._name[len(streamName + "_payload_") :], int(e))
 
             if onTransaction:
                 onTransaction(payload, handle)
@@ -239,7 +239,9 @@ def StreamReader(streamName, onTransaction, handle, dut, clk):
 class Bundle:
     def __init__(self, dut, name):
         self.nameToElement = {}
-        self.elements = [a for a in dut if (a._name.lower().startswith(name.lower() + "_") and not a._name.lower().endswith("_readablebuffer"))]
+        self.elements = [
+            a for a in dut if (a._name.lower().startswith(name.lower() + "_") and not a._name.lower().endswith("_readablebuffer"))
+        ]
 
         for e in [a for a in dut if a._name == name]:
             self.elements.append(e)
@@ -249,7 +251,7 @@ class Bundle:
             if len(name) == len(element._name):
                 eName = "itself"
             else:
-                eName = element._name[len(name) + 1:]
+                eName = element._name[len(name) + 1 :]
 
             if eName == "id":
                 eName = "hid"
@@ -267,12 +269,12 @@ def readIHex(path, callback, context):
         offset = 0
         for line in f:
             if len(line) > 0:
-                assert line[0] == ':'
+                assert line[0] == ":"
                 byteCount = int(line[1:3], 16)
                 nextAddr = int(line[3:7], 16) + offset
                 key = int(line[7:9], 16)
                 if key == 0:
-                    array = [int(line[9 + i * 2:11 + i * 2], 16) for i in range(0, byteCount)]
+                    array = [int(line[9 + i * 2 : 11 + i * 2], 16) for i in range(0, byteCount)]
                     callback(nextAddr, array, context)
                 elif key == 2:
                     offset = int(line[9:13], 16)
@@ -282,7 +284,7 @@ def readIHex(path, callback, context):
 
 @coroutine
 def TriggerAndCond(trigger, cond):
-    while(True):
+    while True:
         yield trigger
         if cond:
             break
@@ -290,7 +292,7 @@ def TriggerAndCond(trigger, cond):
 
 @coroutine
 def waitClockedCond(clk, cond):
-    while(True):
+    while True:
         yield RisingEdge(clk)
         if cond():
             break
