@@ -11,13 +11,13 @@ from .misc import log2Up, BoolRandomizer, assertEquals, waitClockedCond, randSig
 class Apb3:
     def __init__(self, dut, name, clk=None):
         self.clk = clk
-        self.PADDR     = dut.__getattr__(name + "_PADDR")
-        self.PSEL      = dut.__getattr__(name + "_PSEL")
-        self.PENABLE   = dut.__getattr__(name + "_PENABLE")
-        self.PREADY    = dut.__getattr__(name + "_PREADY")
-        self.PWRITE    = dut.__getattr__(name + "_PWRITE")
-        self.PWDATA    = dut.__getattr__(name + "_PWDATA")
-        self.PRDATA    = dut.__getattr__(name + "_PRDATA")
+        self.PADDR = dut.__getattr__(name + "_PADDR")
+        self.PSEL = dut.__getattr__(name + "_PSEL")
+        self.PENABLE = dut.__getattr__(name + "_PENABLE")
+        self.PREADY = dut.__getattr__(name + "_PREADY")
+        self.PWRITE = dut.__getattr__(name + "_PWRITE")
+        self.PWDATA = dut.__getattr__(name + "_PWDATA")
+        self.PRDATA = dut.__getattr__(name + "_PRDATA")
 
     def idle(self):
         self.PSEL.value = 0
@@ -36,7 +36,7 @@ class Apb3:
         self.PWDATA.value = data
         yield RisingEdge(self.clk)
         self.PENABLE.value = True
-        yield waitClockedCond(self.clk, lambda : self.PREADY == True)
+        yield waitClockedCond(self.clk, lambda: self.PREADY == True)
         randSignal(self.PADDR)
         self.PSEL.value = 0
         randSignal(self.PENABLE)
