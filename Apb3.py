@@ -1,11 +1,8 @@
-import random
-
-import cocotb
-from cocotb.result import TestFailure, ReturnValue
-from cocotb.triggers import RisingEdge, Edge
+from cocotb.result import ReturnValue
+from cocotb.triggers import RisingEdge
 from cocotb.decorators import coroutine
 
-from .misc import log2Up, BoolRandomizer, assertEquals, waitClockedCond, randSignal
+from .misc import assertEquals, waitClockedCond, randSignal
 
 
 class Apb3:
