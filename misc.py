@@ -2,10 +2,9 @@ import random
 
 import cocotb
 from cocotb.binary import BinaryValue
-from cocotb.decorators import coroutine
 from cocotb.result import TestFailure
 from cocotb.triggers import Timer, RisingEdge
-
+from cocotb.decorators import coroutine
 
 def cocotbXHack():
     if hasattr(BinaryValue,"_resolve_to_0"):
@@ -83,7 +82,7 @@ def sint(signal):
     return signal.value.signed_integer
 
 
-@cocotb.coroutine
+@coroutine
 def ClockDomainAsyncReset(clk,reset,period = 1000):
     if reset:
         reset.value = 1
@@ -97,14 +96,14 @@ def ClockDomainAsyncReset(clk,reset,period = 1000):
         clk.value = 1
         yield Timer(period/2)
 
-@cocotb.coroutine
+@coroutine
 def SimulationTimeout(duration):
     yield Timer(duration)
     raise TestFailure("Simulation timeout")
 
 
 import time
-@cocotb.coroutine
+@coroutine
 def simulationSpeedPrinter(clk):
     counter = 0
     lastTime = time.time()
@@ -147,7 +146,7 @@ class BoolRandomizer:
 
 MyObject = type('MyObject', (object,), {})
 
-@cocotb.coroutine
+@coroutine
 def StreamRandomizer(streamName, onNew,handle, dut, clk):
     validRandomizer = BoolRandomizer()
     valid = getattr(dut, streamName + "_valid")
@@ -175,7 +174,7 @@ def StreamRandomizer(streamName, onNew,handle, dut, clk):
                 if onNew:
                     onNew(payload,handle)
 
-@cocotb.coroutine
+@coroutine
 def FlowRandomizer(streamName, onNew,handle, dut, clk):
     validRandomizer = BoolRandomizer()
     valid = getattr(dut, streamName + "_valid")
@@ -200,7 +199,7 @@ def FlowRandomizer(streamName, onNew,handle, dut, clk):
         else:
             valid.value = 0
 
-@cocotb.coroutine
+@coroutine
 def StreamReader(streamName, onTransaction, handle, dut, clk):
     validRandomizer = BoolRandomizer()
     valid = getattr(dut, streamName + "_valid")
