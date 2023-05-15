@@ -15,12 +15,13 @@ class Infrastructure:
         if parent is not None:
             parent.addChild(self)
         self.children = []
+        self.error = False
 
     def getPhase(self):
         return self.parent.getPhase()
 
     def startPhase(self, phase):
-        error = False
+        self.error = False
         for child in self.children:
             child.startPhase(phase)
 
