@@ -77,7 +77,7 @@ class ClockDomain:
             valueReset = int(1 if self.typeReset == RESET_ACTIVE_LEVEL.LOW else 0)
             if int(self.reset) == valueReset:
                 self.event_endReset.set()
-                break;
+                break
 
     ##########################################################################
     # Display the frequency of the clock domain
