@@ -22,8 +22,8 @@ def log2Up(value):
     return value.bit_length()-1
 
 
-def randInt(min, max):
-    return random.randint(min, max)
+def randInt(lower, upper):
+    return random.randint(lower, upper)
 
 
 def randBool():
