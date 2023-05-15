@@ -96,8 +96,8 @@ class ScorboardOutOfOrder(Infrastructure):
 
     def match(self, uut, ref):
         equal = uut.equalRef(ref)
-        for l in self.listeners:
-            l(uut, ref, equal)
+        for handler in self.listeners:
+            handler(uut, ref, equal)
 
         if not equal:
             cocotb._log.error("Missmatch detected in " + self.getPath())
@@ -108,12 +108,12 @@ class ScorboardOutOfOrder(Infrastructure):
         if phase == PHASE_CHECK_SCORBOARDS:
             if len(self.refsDic) != 0 or len(self.uutsDic) != 0:
                 error = self.getPath() + " has some remaining transaction :\n"
-                for l in self.refsDic.values():
-                    for e in l.queue:
+                for it in self.refsDic.values():
+                    for e in it.queue:
                         error += "REF:\n" + str(e) + "\n"
 
-                for l in self.uutsDic.values():
-                    for e in l.queue:
+                for it in self.uutsDic.values():
+                    for e in it.queue:
                         error += "UUT:\n" + str(e) + "\n"
 
                 cocotb._log.error(error)
