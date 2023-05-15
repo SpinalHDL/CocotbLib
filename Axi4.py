@@ -37,13 +37,13 @@ class Axi4Shared:
         self.b = Stream(dut, name + "_b")
 
 
-def Axi4AddrIncr(address, burst, len, size):
+def Axi4AddrIncr(address, burst, length, size):
     if burst == 0:
         return address
     if burst == 1:
         return address + (1 << size)
     if burst == 2:
-        burstSize = (1 << size) * (len+1)
+        burstSize = (1 << size) * (length+1)
         burstMask = burstSize-1
         base = (address + (1 << size)) & burstMask
         return (address & ~burstMask) | base
