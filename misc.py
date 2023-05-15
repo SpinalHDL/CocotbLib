@@ -1,4 +1,5 @@
 import random
+import time
 
 import cocotb
 from cocotb.binary import BinaryValue
@@ -114,9 +115,6 @@ def ClockDomainAsyncReset(clk, reset, period=1000):
 def SimulationTimeout(duration):
     yield Timer(duration)
     raise TestFailure("Simulation timeout")
-
-
-import time
 
 
 @coroutine
