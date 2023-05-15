@@ -3,10 +3,10 @@ import cocotb
 import types
 from cocotb.result import TestFailure
 from cocotb.triggers import RisingEdge, Timer, Event
-from cocotblib.Phase import Infrastructure, PHASE_WAIT_TASKS_END
-from cocotblib.Scorboard import ScorboardInOrder
+from .Phase import Infrastructure, PHASE_WAIT_TASKS_END
+from .Scorboard import ScorboardInOrder
 
-from cocotblib.misc import Bundle, BoolRandomizer
+from .misc import Bundle, BoolRandomizer
 
 
 class Stream:
