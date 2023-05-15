@@ -97,11 +97,12 @@ class StreamDriverMaster:
     def stim(self):
         stream = self.stream
         stream.valid.value = 0
+        next_delay = 0
         while True:
             yield RisingEdge(self.clk)
             if int(stream.valid) == 1 and int(stream.ready) == 1:
                 stream.valid.value = 0
-                for i in range(nextDelay):
+                for i in range(next_delay):
                     yield RisingEdge(self.clk)
 
             if self.transactor is not None and (int(stream.valid) == 0 or int(stream.ready) == 1):
@@ -111,9 +112,9 @@ class StreamDriverMaster:
                     trans = self.transactor()
                 if trans is not None:
                     if hasattr(trans, "nextDelay"):
-                        nextDelay = trans.nextDelay
+                        next_delay = trans.nextDelay
                     else:
-                        nextDelay = 0
+                        next_delay = 0
                     stream.valid.value = 1
 
                     for name in stream.payload.nameToElement:
