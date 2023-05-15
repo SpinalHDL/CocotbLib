@@ -1,9 +1,9 @@
 import random
 
 import cocotb
-from cocotb.decorators import coroutine
 from cocotb.result import TestFailure, ReturnValue
 from cocotb.triggers import RisingEdge, Edge
+from cocotb.decorators import coroutine
 
 from .misc import log2Up, BoolRandomizer, assertEquals, waitClockedCond, randSignal
 
