@@ -8,7 +8,7 @@ from cocotb.decorators import coroutine
 #
 class RESET_ACTIVE_LEVEL:
     HIGH = 1
-    LOW  = 0
+    LOW = 0
 
 
 ###############################################################################
@@ -37,12 +37,10 @@ class ClockDomain:
 
         self.event_endReset = Event()
 
-
     ##########################################################################
     # Generate the clock signals
     @coroutine
     def start(self):
-
         self.fork_gen = cocotb.start_soon(self._clkGen())
         if self.reset != None:
             cocotb.start_soon(self._waitEndReset())
@@ -55,12 +53,10 @@ class ClockDomain:
         if self.reset:
             self.reset.value = int(1 if self.typeReset == RESET_ACTIVE_LEVEL.LOW else 0)
 
-
     ##########################################################################
     # Stop all processes
     def stop(self):
         self.fork_gen.kill()
-
 
     ##########################################################################
     # Generate the clk
@@ -72,7 +68,6 @@ class ClockDomain:
             self.clk.value = 1
             yield Timer(self.halfPeriod)
 
-
     ##########################################################################
     # Wait the end of the reset
     @coroutine
@@ -83,7 +78,6 @@ class ClockDomain:
             if int(self.reset) == valueReset:
                 self.event_endReset.set()
                 break;
-
 
     ##########################################################################
     # Display the frequency of the clock domain
