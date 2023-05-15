@@ -36,7 +36,7 @@ class Apb3:
         self.PWDATA.value = data
         yield RisingEdge(self.clk)
         self.PENABLE.value = True
-        yield waitClockedCond(self.clk, lambda: self.PREADY == True)
+        yield waitClockedCond(self.clk, lambda: self.PREADY.value == 1)
         randSignal(self.PADDR)
         self.PSEL.value = 0
         randSignal(self.PENABLE)
@@ -58,7 +58,7 @@ class Apb3:
         randSignal(self.PWDATA)
         yield RisingEdge(self.clk)
         self.PENABLE.value = True
-        yield waitClockedCond(self.clk, lambda: self.PREADY == True)
+        yield waitClockedCond(self.clk, lambda: self.PREADY.value == 1)
         randSignal(self.PADDR)
         self.PSEL.value = 0
         randSignal(self.PENABLE)
