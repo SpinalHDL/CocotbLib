@@ -21,14 +21,14 @@ def AhbLite3MasterIdle(ahb):
 
 class AhbLite3Transaction:
     def __init__(self):
-        self.HADDR     = 0
-        self.HWRITE    = 0
-        self.HSIZE     = 0
-        self.HBURST    = 0
-        self.HPROT     = 0
-        self.HTRANS    = 0
+        self.HADDR = 0
+        self.HWRITE = 0
+        self.HSIZE = 0
+        self.HBURST = 0
+        self.HPROT = 0
+        self.HTRANS = 0
         self.HMASTLOCK = 0
-        self.HWDATA    = 0
+        self.HWDATA = 0
 
 
 class AhbLite3TraficGenerator:
@@ -111,14 +111,14 @@ class AhbLite3MasterDriver:
     @coroutine
     def stim(self):
         ahb = self.ahb
-        ahb.HADDR.value     = 0
-        ahb.HWRITE.value    = 0
-        ahb.HSIZE.value     = 0
-        ahb.HBURST.value    = 0
-        ahb.HPROT.value     = 0
-        ahb.HTRANS.value    = 0
+        ahb.HADDR.value = 0
+        ahb.HWRITE.value = 0
+        ahb.HSIZE.value = 0
+        ahb.HBURST.value = 0
+        ahb.HPROT.value = 0
+        ahb.HTRANS.value = 0
         ahb.HMASTLOCK.value = 0
-        ahb.HWDATA.value    = 0
+        ahb.HWDATA.value = 0
         HWDATAbuffer = 0
         while True:
             for trans in self.transactor.getTransactions():
@@ -233,8 +233,8 @@ class AhbLite3SlaveMemory:
     def stim(self):
         ahb = self.ahb
         ahb.HREADYOUT.value = 1
-        ahb.HRESP.value     = 0
-        ahb.HRDATA.value    = 0
+        ahb.HRESP.value = 0
+        ahb.HRDATA.value = 0
         valid = 0
         while True:
             yield RisingEdge(self.clk)
