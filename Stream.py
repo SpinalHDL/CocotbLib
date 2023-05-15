@@ -1,4 +1,3 @@
-
 import types
 
 import cocotb
@@ -53,7 +52,7 @@ class Transaction(object):
 
     def __setattr__(self, key, value):
         # print("set " + key)
-        if key[0] != '_':
+        if key[0] != "_":
             self._nameToElement[key] = value
         object.__setattr__(self, key, value)
 
@@ -78,8 +77,9 @@ class Transaction(object):
                 biggerName = len(n)
         for name in self._nameToElement:
             e = self._nameToElement[name]
-            buffer += "%s %s: 0x%x\n" % (name, " "*(biggerName-len(name)), 0 if e is None else e)
+            buffer += "%s %s: 0x%x\n" % (name, " " * (biggerName - len(name)), 0 if e is None else e)
         return buffer
+
 
 # Transaction = type('Transaction', (object,), {})
 
