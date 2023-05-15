@@ -17,7 +17,7 @@ class RESET_ACTIVE_LEVEL:
 #
 #    # Create a clock with a reset active high
 #    clockDomain = ClockDomain(dut.clk, 400, dut.reset, RESET_ACTIVE_LEVEL.HIGH)
-#    cocobt.fork( clockDomain.start() )
+#    cocotb.start_soon( clockDomain.start() )
 #
 class ClockDomain:
 
@@ -45,9 +45,9 @@ class ClockDomain:
     @cocotb.coroutine
     def start(self):
 
-        self.fork_gen = cocotb.fork(self._clkGen())
+        self.fork_gen = cocotb.start_soon(self._clkGen())
         if self.reset != None :
-            cocotb.fork(self._waitEndReset())
+            cocotb.start_soon(self._waitEndReset())
 
         if self.reset:
             self.reset.value = self.typeReset
