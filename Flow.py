@@ -20,7 +20,6 @@ class Flow:
         # Event
         self.event_valid = Event()
 
-
     # ==========================================================================
     # Start to monitor the valid signal
     # ==========================================================================
@@ -28,13 +27,11 @@ class Flow:
         self.clk = clk
         self.fork_valid = cocotb.start_soon(self.monitor_valid())
 
-
     # ==========================================================================
     # Stop monitoring
     # ==========================================================================
     def stopMonitoring(self):
         self.fork_valid.kill()
-
 
     # ==========================================================================
     # Monitor the valid signal
