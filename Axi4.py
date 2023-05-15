@@ -106,6 +106,8 @@ class Axi4SharedMemoryChecker(Infrastructure):
         cmd.qos = randBits(4)
         cmd.prot = randBits(3)
 
+        start = 0
+        end = 0
         byteCount = (1 << cmd.size) * (cmd.len + 1)
         while True:
             cmd.addr = self.genRandomeAddress() & ~((1 << cmd.size) - 1)
