@@ -1,5 +1,3 @@
-import cocotb
-from cocotb.result import TestFailure, TestError
 from cocotb.triggers import Timer
 from cocotb.decorators import coroutine
 
