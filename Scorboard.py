@@ -33,14 +33,14 @@ class ScorboardInOrder(Infrastructure):
 
     def match(self, uut, ref):
         if not uut.equalRef(ref):
-            cocotb._log.error("Missmatch detected in " + self.getPath())
+            cocotb._log.error("Mismatch detected in " + self.getPath())
             uut.assertEqualRef(ref)
 
     def startPhase(self, phase):
         Infrastructure.startPhase(self, phase)
         if phase == PHASE_CHECK_SCORBOARDS:
             if (not self.refs.empty()) or (not self.uuts.empty()):
-                error = self.getPath() + " has some remaining transaction :\n"
+                error = self.getPath() + " has some remaining transaction(s) :\n"
                 for e in self.refs.queue:
                     error += "REF:\n" + str(e) + "\n"
 
@@ -100,14 +100,14 @@ class ScorboardOutOfOrder(Infrastructure):
             handler(uut, ref, equal)
 
         if not equal:
-            cocotb._log.error("Missmatch detected in " + self.getPath())
+            cocotb._log.error("Mismatch detected in " + self.getPath())
             uut.assertEqualRef(ref)
 
     def startPhase(self, phase):
         Infrastructure.startPhase(self, phase)
         if phase == PHASE_CHECK_SCORBOARDS:
             if len(self.refsDic) != 0 or len(self.uutsDic) != 0:
-                error = self.getPath() + " has some remaining transaction :\n"
+                error = self.getPath() + " has some remaining transaction(s) :\n"
                 for it in self.refsDic.values():
                     for e in it.queue:
                         error += "REF:\n" + str(e) + "\n"
