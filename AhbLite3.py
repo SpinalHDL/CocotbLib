@@ -3,6 +3,7 @@ import random
 import cocotb
 from cocotb.result import TestFailure
 from cocotb.triggers import RisingEdge, Edge
+from cocotb.decorators import coroutine
 
 from .misc import log2Up, BoolRandomizer, assertEquals
 
@@ -105,7 +106,7 @@ class AhbLite3MasterDriver:
         self.transactor = transactor
         cocotb.start_soon(self.stim())
 
-    @cocotb.coroutine
+    @coroutine
     def stim(self):
         ahb = self.ahb
         ahb.HADDR.value     = 0
@@ -142,7 +143,7 @@ class AhbLite3Terminaison:
         cocotb.start_soon(self.stim())
         cocotb.start_soon(self.combEvent())
 
-    @cocotb.coroutine
+    @coroutine
     def stim(self):
         randomizer = BoolRandomizer()
         self.ahb.HREADY.value = 1
@@ -152,7 +153,7 @@ class AhbLite3Terminaison:
             self.randomHREADY = randomizer.get()
             self.doComb()
 
-    @cocotb.coroutine
+    @coroutine
     def combEvent(self):
         while True:
             yield Edge(self.ahb.HREADYOUT)
@@ -171,7 +172,7 @@ class AhbLite3MasterReadChecker:
         self.counter = 0
         cocotb.start_soon(self.stim())
 
-    @cocotb.coroutine
+    @coroutine
     def stim(self):
         ahb = self.ahb
         readIncoming = False
@@ -207,7 +208,7 @@ class AhbLite3SlaveMemory:
         cocotb.start_soon(self.stim())
         cocotb.start_soon(self.stimReady())
 
-    @cocotb.coroutine
+    @coroutine
     def stimReady(self):
         randomizer = BoolRandomizer()
         self.ahb.HREADYOUT.value = 1
@@ -226,7 +227,7 @@ class AhbLite3SlaveMemory:
             else:
                 self.ahb.HREADYOUT.value = 1  # IDLE and BUSY require 0 WS
 
-    @cocotb.coroutine
+    @coroutine
     def stim(self):
         ahb = self.ahb
         ahb.HREADYOUT.value = 1
