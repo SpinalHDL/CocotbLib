@@ -42,7 +42,7 @@ class ClockDomain:
     @coroutine
     def start(self):
         self.fork_gen = cocotb.start_soon(self._clkGen())
-        if self.reset != None:
+        if self.reset is not None:
             cocotb.start_soon(self._waitEndReset())
 
         if self.reset:
