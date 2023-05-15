@@ -34,7 +34,7 @@ class ScorboardInOrder(Infrastructure):
 
     def match(self,uut,ref):
         if not uut.equalRef(ref):
-            cocotb.log.error("Missmatch detected in " + self.getPath())
+            cocotb._log.error("Missmatch detected in " + self.getPath())
             uut.assertEqualRef(ref)
 
     def startPhase(self, phase):
@@ -48,7 +48,7 @@ class ScorboardInOrder(Infrastructure):
                 for e in self.uuts.queue:
                     error += "UUT:\n" + str(e) + "\n"
 
-                cocotb.log.error(error)
+                cocotb._log.error(error)
 
 
     def endPhase(self, phase):
@@ -104,7 +104,7 @@ class ScorboardOutOfOrder(Infrastructure):
             l(uut,ref,equal)
 
         if not equal:
-            cocotb.log.error("Missmatch detected in " + self.getPath())
+            cocotb._log.error("Missmatch detected in " + self.getPath())
             uut.assertEqualRef(ref)
 
     def startPhase(self, phase):
@@ -120,7 +120,7 @@ class ScorboardOutOfOrder(Infrastructure):
                     for e in l.queue:
                         error += "UUT:\n" + str(e) + "\n"
 
-                cocotb.log.error(error)
+                cocotb._log.error(error)
 
 
     def endPhase(self, phase):
