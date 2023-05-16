@@ -3,6 +3,7 @@ import time
 
 import cocotb
 from cocotb.binary import BinaryValue
+from cocotb.handle import NonHierarchyObject
 from cocotb.result import TestFailure
 from cocotb.triggers import Timer, RisingEdge
 from cocotb.decorators import coroutine
@@ -302,3 +303,25 @@ def waitClockedCond(clk, cond):
 def TimerClk(clk, count):
     for i in range(count):
         yield RisingEdge(clk)
+
+
+# Can pass in a signal-like object, or BinaryValue or string value
+def signal_value_as_string_equal(a, b) -> bool:
+    if a is NonHierarchyObject:  # resolve BinaryValue
+        a = a.value
+    if b is NonHierarchyObject:  # resolve BinaryValue
+        b = b.value
+    a_str = str(a).lower()
+    b_str = str(b).lower()
+    return a_str == b_str
+
+
+# Can pass in a signal-like object, or BinaryValue or string value
+def signal_value_as_string_not_equal(a, b) -> bool:
+    if a is NonHierarchyObject:  # resolve BinaryValue
+        a = a.value
+    if b is NonHierarchyObject:  # resolve BinaryValue
+        b = b.value
+    a_str = str(a).lower()
+    b_str = str(b).lower()
+    return a_str != b_str
