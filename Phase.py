@@ -1,6 +1,5 @@
-import cocotb
-from cocotb.result import TestFailure, TestError
 from cocotb.triggers import Timer
+from cocotb.decorators import coroutine
 
 PHASE_NULL = 0
 PHASE_SIM = 100
@@ -10,18 +9,19 @@ PHASE_DONE = 400
 
 
 class Infrastructure:
-    def __init__(self,name,parent):
+    def __init__(self, name, parent):
         self.name = name
         self.parent = parent
-        if parent != None:
+        if parent is not None:
             parent.addChild(self)
         self.children = []
+        self.error = False
 
     def getPhase(self):
         return self.parent.getPhase()
 
     def startPhase(self, phase):
-        error = False
+        self.error = False
         for child in self.children:
             child.startPhase(phase)
 
@@ -40,12 +40,12 @@ class Infrastructure:
         for child in self.children:
             child.endPhase(phase)
 
-    def addChild(self,child):
+    def addChild(self, child):
         if child not in self.children:
             self.children.append(child)
 
     def getPath(self):
-        if self.parent != None:
+        if self.parent is not None:
             return self.parent.getPath() + "/" + self.name
         else:
             return self.name
@@ -59,10 +59,10 @@ class PhaseManager(Infrastructure):
         self.waitTasksEndTime = 0
         # setSimManager(self)
 
-    def setWaitTasksEndTime(self,value):
+    def setWaitTasksEndTime(self, value):
         self.waitTasksEndTime = value
 
-    @cocotb.coroutine
+    @coroutine
     def waitChild(self):
         while True:
             if self.canPhaseProgress(self.phase):
@@ -72,14 +72,14 @@ class PhaseManager(Infrastructure):
     def getPhase(self):
         return self.phase
 
-    def switchPhase(self,phase):
+    def switchPhase(self, phase):
         for infra in self.children:
             infra.endPhase(self.phase)
         self.phase = phase
         for infra in self.children:
             infra.startPhase(self.phase)
 
-    @cocotb.coroutine
+    @coroutine
     def run(self):
         self.switchPhase(PHASE_SIM)
         yield self.waitChild()
@@ -88,6 +88,7 @@ class PhaseManager(Infrastructure):
         yield Timer(self.waitTasksEndTime)
         self.switchPhase(PHASE_CHECK_SCORBOARDS)
         self.switchPhase(PHASE_DONE)
+
 
 # _simManager = None
 #
@@ -98,6 +99,3 @@ class PhaseManager(Infrastructure):
 #     global _simManager
 #     _simManager = that
 #
-
-
-
