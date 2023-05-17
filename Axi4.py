@@ -1,41 +1,43 @@
 import random
 from queue import Queue
 
-from cocotblib.Phase import PHASE_SIM, Infrastructure
-from cocotblib.Scorboard import ScorboardOutOfOrder
-from cocotblib.misc import BoolRandomizer, log2Up, randBits
-
-from cocotblib.Stream import Stream, Transaction, StreamDriverSlave, StreamDriverMaster, StreamMonitor
+from .Phase import PHASE_SIM, Infrastructure
+from .Scorboard import ScorboardOutOfOrder
+from .misc import BoolRandomizer, log2Up, randBits
+from .Stream import Stream, Transaction, StreamDriverSlave, StreamDriverMaster, StreamMonitor
 
 
 class Axi4:
-    def __init__(self,dut,name):
-        self.ar = Stream(dut,name + "_ar")
-        self.r  = Stream(dut, name + "_r")
+    def __init__(self, dut, name):
+        self.ar = Stream(dut, name + "_ar")
+        self.r = Stream(dut, name + "_r")
         self.aw = Stream(dut, name + "_aw")
-        self.w  = Stream(dut, name + "_w")
-        self.b  = Stream(dut, name + "_b")
+        self.w = Stream(dut, name + "_w")
+        self.b = Stream(dut, name + "_b")
+
 
 class Axi4ReadOnly:
-    def __init__(self,dut,name):
-        self.ar = Stream(dut,name + "_ar")
-        self.r  = Stream(dut, name + "_r")
+    def __init__(self, dut, name):
+        self.ar = Stream(dut, name + "_ar")
+        self.r = Stream(dut, name + "_r")
+
 
 class Axi4WriteOnly:
-    def __init__(self,dut,name):
+    def __init__(self, dut, name):
         self.aw = Stream(dut, name + "_aw")
-        self.w  = Stream(dut, name + "_w")
-        self.b  = Stream(dut, name + "_b")
+        self.w = Stream(dut, name + "_w")
+        self.b = Stream(dut, name + "_b")
+
 
 class Axi4Shared:
-    def __init__(self,dut,name):
-        self.arw = Stream(dut,name + "_arw")
-        self.r  = Stream(dut, name + "_r")
-        self.w  = Stream(dut, name + "_w")
-        self.b  = Stream(dut, name + "_b")
+    def __init__(self, dut, name):
+        self.arw = Stream(dut, name + "_arw")
+        self.r = Stream(dut, name + "_r")
+        self.w = Stream(dut, name + "_w")
+        self.b = Stream(dut, name + "_b")
 
 
-def Axi4AddrIncr(address,burst,len,size):
+def Axi4AddrIncr(address, burst, len, size):
     if burst == 0:
         return address
     if burst == 1:
@@ -47,10 +49,9 @@ def Axi4AddrIncr(address,burst,len,size):
         return (address & ~burstMask) | base
 
 
-
 class Axi4SharedMemoryChecker(Infrastructure):
-    def __init__(self,name,parent,axi,addressWidth,clk,reset):
-        Infrastructure.__init__(self,name,parent)
+    def __init__(self, name, parent, axi, addressWidth, clk, reset):
+        Infrastructure.__init__(self, name, parent)
         self.axi = axi
         self.idWidth = len(axi.arw.payload.hid)
         self.addressWidth = addressWidth
@@ -59,11 +60,11 @@ class Axi4SharedMemoryChecker(Infrastructure):
         self.readWriteRand = BoolRandomizer()
         self.writeDataRand = BoolRandomizer()
         self.writeRspScoreboard = ScorboardOutOfOrder("writeRspScoreboard", self)
-        self.readRspScoreboard  = ScorboardOutOfOrder("readRspScoreboard", self)
+        self.readRspScoreboard = ScorboardOutOfOrder("readRspScoreboard", self)
         self.writeRspScoreboard.addListener(self.freeReservatedAddresses)
         self.readRspScoreboard.addListener(self.freeReservatedAddresses)
-        self.cmdTasks   =  Queue()
-        self.writeTasks =  Queue()
+        self.cmdTasks = Queue()
+        self.writeTasks = Queue()
         self.nonZeroReadRspCounter = 0
         self.nonZeroReadRspCounterTarget = 1000
         self.reservedAddresses = {}
@@ -74,13 +75,13 @@ class Axi4SharedMemoryChecker(Infrastructure):
         StreamDriverMaster(axi.w, self.genWriteData, clk, reset)
         StreamMonitor(axi.r, self.onReadRsp, clk, reset)
         StreamMonitor(axi.b, self.onWriteRsp, clk, reset)
-        axi.w.payload.last <= 0
-        axi.r.payload.last <= 0
+        axi.w.payload.last.value = 0
+        axi.r.payload.last.value = 0
 
-    def freeReservatedAddresses(self,uut,ref,equal):
-        self.reservedAddresses.pop(ref,None)
+    def freeReservatedAddresses(self, uut, ref, equal):
+        self.reservedAddresses.pop(ref, None)
 
-    def isAddressRangeBusy(self,start,end):
+    def isAddressRangeBusy(self, start, end):
         for r in self.reservedAddresses.values():
             if start < r[1] and end > r[0]:
                 return True
@@ -94,10 +95,10 @@ class Axi4SharedMemoryChecker(Infrastructure):
         cmd.hid = randBits(self.idWidth)  # Each master can use 4 id
         cmd.region = randBits(4)
         cmd.len = randBits(4)
-        cmd.size = random.randint(0,log2Up(self.dataWidth//8))
-        cmd.burst = random.randint(0,2)
+        cmd.size = random.randint(0, log2Up(self.dataWidth//8))
+        cmd.burst = random.randint(0, 2)
         if cmd.burst == 2:
-            cmd.len = random.choice([2,4,8,16])-1
+            cmd.len = random.choice([2, 4, 8, 16])-1
         else:
             cmd.len = randBits(4) + (16 if random.random() < 0.1 else 0) + (32 if random.random() < 0.02 else 0)
         cmd.lock = randBits(1)
@@ -107,13 +108,13 @@ class Axi4SharedMemoryChecker(Infrastructure):
 
         byteCount = (1 << cmd.size)*(cmd.len + 1)
         while(True):
-            cmd.addr  = self.genRandomeAddress() & ~((1 << cmd.size)-1)
+            cmd.addr = self.genRandomeAddress() & ~((1 << cmd.size)-1)
             if cmd.burst == 1:
-                if cmd.addr + byteCount >= (1<<self.addressWidth):
+                if cmd.addr + byteCount >= (1 << self.addressWidth):
                     continue
             if cmd.burst == 0:
                 start = cmd.addr
-                end   = start + cmd.size
+                end = start + cmd.size
 
             if cmd.burst == 1:
                 start = cmd.addr
@@ -123,7 +124,7 @@ class Axi4SharedMemoryChecker(Infrastructure):
                 start = cmd.addr & ~(byteCount-1)
                 end = start + byteCount
 
-            if self.isAddressRangeBusy(start,end):
+            if self.isAddressRangeBusy(start, end):
                 continue
             break
 
@@ -140,14 +141,14 @@ class Axi4SharedMemoryChecker(Infrastructure):
                 for s in range(self.dataWidth//8):
                     if (dataTrans.strb >> s) & 1 == 1:
                         self.ram[(beatAddr & ~(self.dataWidth//8-1)) + s] = (dataTrans.data >> (s*8)) & 0xFF
-                beatAddr = Axi4AddrIncr(beatAddr,cmd.burst,cmd.len,cmd.size)
+                beatAddr = Axi4AddrIncr(beatAddr, cmd.burst, cmd.len, cmd.size)
 
             writeRsp = Transaction()
             writeRsp.resp = 0
             writeRsp.hid = cmd.hid
 
-            self.reservedAddresses[writeRsp] = [start,end]
-            self.writeRspScoreboard.refPush(writeRsp,writeRsp.hid)
+            self.reservedAddresses[writeRsp] = [start, end]
+            self.writeRspScoreboard.refPush(writeRsp, writeRsp.hid)
         else:
             cmd.write = 0
 
@@ -169,7 +170,6 @@ class Axi4SharedMemoryChecker(Infrastructure):
         self.cmdTasks.put(cmd)
         # print(str(len(self.cmdTasks.queue)) + " " + str(len(self.writeTasks.queue)))
 
-
     def genReadWriteCmd(self):
         if self.doReadWriteCmdRand.get():
             while self.cmdTasks.empty():
@@ -186,8 +186,8 @@ class Axi4SharedMemoryChecker(Infrastructure):
                 self.genNewCmd()
             return self.writeTasks.get()
 
-    def onWriteRsp(self,trans):
-        self.writeRspScoreboard.uutPush(trans,trans.hid)
+    def onWriteRsp(self, trans):
+        self.writeRspScoreboard.uutPush(trans, trans.hid)
 
     def onReadRsp(self, trans):
         self.readRspScoreboard.uutPush(trans, trans.hid)

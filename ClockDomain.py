@@ -1,5 +1,6 @@
 import cocotb
 from cocotb.triggers import Timer, RisingEdge, Event
+from cocotb.decorators import coroutine
 
 
 ###############################################################################
@@ -17,11 +18,9 @@ class RESET_ACTIVE_LEVEL:
 #
 #    # Create a clock with a reset active high
 #    clockDomain = ClockDomain(dut.clk, 400, dut.reset, RESET_ACTIVE_LEVEL.HIGH)
-#    cocobt.fork( clockDomain.start() )
+#    cocotb.start_soon( clockDomain.start() )
 #
 class ClockDomain:
-
-
     ##########################################################################
     # Constructor
     #
@@ -30,11 +29,10 @@ class ClockDomain:
     # @param reset            : Reset generated
     # @param resetactiveLevel : Reset active low or high
     def __init__(self, clk, halfPeriod, reset=None, resetActiveLevel=RESET_ACTIVE_LEVEL.LOW):
-
         self.halfPeriod = halfPeriod
 
-        self.clk       = clk
-        self.reset     = reset
+        self.clk = clk
+        self.reset = reset
         self.typeReset = resetActiveLevel
 
         self.event_endReset = Event()
@@ -42,43 +40,42 @@ class ClockDomain:
 
     ##########################################################################
     # Generate the clock signals
-    @cocotb.coroutine
+    @coroutine
     def start(self):
 
-        self.fork_gen = cocotb.fork(self._clkGen())
-        if self.reset != None :
-            cocotb.fork(self._waitEndReset())
+        self.fork_gen = cocotb.start_soon(self._clkGen())
+        if self.reset != None:
+            cocotb.start_soon(self._waitEndReset())
 
         if self.reset:
-            self.reset <= self.typeReset
+            self.reset.value = self.typeReset
 
         yield Timer(self.halfPeriod * 5)
 
         if self.reset:
-            self.reset <= int(1 if self.typeReset == RESET_ACTIVE_LEVEL.LOW else 0)
+            self.reset.value = int(1 if self.typeReset == RESET_ACTIVE_LEVEL.LOW else 0)
 
 
     ##########################################################################
     # Stop all processes
     def stop(self):
-
         self.fork_gen.kill()
 
 
     ##########################################################################
     # Generate the clk
-    @cocotb.coroutine
+    @coroutine
     def _clkGen(self):
         while True:
-            self.clk <= 0
+            self.clk.value = 0
             yield Timer(self.halfPeriod)
-            self.clk <= 1
+            self.clk.value = 1
             yield Timer(self.halfPeriod)
 
 
     ##########################################################################
     # Wait the end of the reset
-    @cocotb.coroutine
+    @coroutine
     def _waitEndReset(self):
         while True:
             yield RisingEdge(self.clk)
