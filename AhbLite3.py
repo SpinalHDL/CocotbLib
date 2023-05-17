@@ -3,19 +3,20 @@ import random
 import cocotb
 from cocotb.result import TestFailure
 from cocotb.triggers import RisingEdge, Edge
+from cocotb.decorators import coroutine
 
-from cocotblib.misc import log2Up, BoolRandomizer, assertEquals
+from .misc import log2Up, BoolRandomizer, assertEquals
 
 
 def AhbLite3MasterIdle(ahb):
-    ahb.HADDR <= 0
-    ahb.HWRITE <= 0
-    ahb.HSIZE <= 0
-    ahb.HBURST <= 0
-    ahb.HPROT <= 0
-    ahb.HTRANS <= 0
-    ahb.HMASTLOCK <= 0
-    ahb.HWDATA <= 0
+    ahb.HADDR.value = 0
+    ahb.HWRITE.value = 0
+    ahb.HSIZE.value = 0
+    ahb.HBURST.value = 0
+    ahb.HPROT.value = 0
+    ahb.HTRANS.value = 0
+    ahb.HMASTLOCK.value = 0
+    ahb.HWDATA.value = 0
 
 
 
@@ -103,19 +104,19 @@ class AhbLite3MasterDriver:
         self.clk = clk
         self.reset = reset
         self.transactor = transactor
-        cocotb.fork(self.stim())
+        cocotb.start_soon(self.stim())
 
-    @cocotb.coroutine
+    @coroutine
     def stim(self):
         ahb = self.ahb
-        ahb.HADDR     <= 0
-        ahb.HWRITE    <= 0
-        ahb.HSIZE     <= 0
-        ahb.HBURST    <= 0
-        ahb.HPROT     <= 0
-        ahb.HTRANS    <= 0
-        ahb.HMASTLOCK <= 0
-        ahb.HWDATA    <= 0
+        ahb.HADDR.value     = 0
+        ahb.HWRITE.value    = 0
+        ahb.HSIZE.value     = 0
+        ahb.HBURST.value    = 0
+        ahb.HPROT.value     = 0
+        ahb.HTRANS.value    = 0
+        ahb.HMASTLOCK.value = 0
+        ahb.HWDATA.value    = 0
         HWDATAbuffer = 0
         while True:
             for trans in self.transactor.getTransactions():
@@ -123,14 +124,14 @@ class AhbLite3MasterDriver:
                 while int(self.ahb.HREADY) == 0:
                     yield RisingEdge(self.clk)
 
-                ahb.HADDR <= trans.HADDR
-                ahb.HWRITE <= trans.HWRITE
-                ahb.HSIZE <= trans.HSIZE
-                ahb.HBURST <= trans.HBURST
-                ahb.HPROT <= trans.HPROT
-                ahb.HTRANS <= trans.HTRANS
-                ahb.HMASTLOCK <= trans.HMASTLOCK
-                ahb.HWDATA <= HWDATAbuffer
+                ahb.HADDR.value = trans.HADDR
+                ahb.HWRITE.value = trans.HWRITE
+                ahb.HSIZE.value = trans.HSIZE
+                ahb.HBURST.value = trans.HBURST
+                ahb.HPROT.value = trans.HPROT
+                ahb.HTRANS.value = trans.HTRANS
+                ahb.HMASTLOCK.value = trans.HMASTLOCK
+                ahb.HWDATA.value = HWDATAbuffer
                 HWDATAbuffer = trans.HWDATA
 
 class AhbLite3Terminaison:
@@ -139,27 +140,27 @@ class AhbLite3Terminaison:
         self.clk = clk
         self.reset = reset
         self.randomHREADY = True
-        cocotb.fork(self.stim())
-        cocotb.fork(self.combEvent())
+        cocotb.start_soon(self.stim())
+        cocotb.start_soon(self.combEvent())
 
-    @cocotb.coroutine
+    @coroutine
     def stim(self):
         randomizer = BoolRandomizer()
-        self.ahb.HREADY <= 1
-        self.ahb.HSEL <= 1
+        self.ahb.HREADY.value = 1
+        self.ahb.HSEL.value = 1
         while True:
             yield RisingEdge(self.clk)
             self.randomHREADY = randomizer.get()
             self.doComb()
 
-    @cocotb.coroutine
+    @coroutine
     def combEvent(self):
         while True:
             yield Edge(self.ahb.HREADYOUT)
             self.doComb()
 
     def doComb(self):
-        self.ahb.HREADY <= (self.randomHREADY and (int(self.ahb.HREADYOUT) == 1))
+        self.ahb.HREADY.value = (self.randomHREADY and (int(self.ahb.HREADYOUT) == 1))
 
 
 class AhbLite3MasterReadChecker:
@@ -169,9 +170,9 @@ class AhbLite3MasterReadChecker:
         self.reset = reset
         self.buffer = buffer
         self.counter = 0
-        cocotb.fork(self.stim())
+        cocotb.start_soon(self.stim())
 
-    @cocotb.coroutine
+    @coroutine
     def stim(self):
         ahb = self.ahb
         readIncoming = False
@@ -204,13 +205,13 @@ class AhbLite3SlaveMemory:
         self.size = size
         self.ram = bytearray(b'\x00' * size)
 
-        cocotb.fork(self.stim())
-        cocotb.fork(self.stimReady())
+        cocotb.start_soon(self.stim())
+        cocotb.start_soon(self.stimReady())
 
-    @cocotb.coroutine
+    @coroutine
     def stimReady(self):
         randomizer = BoolRandomizer()
-        self.ahb.HREADYOUT <= 1
+        self.ahb.HREADYOUT.value = 1
         busy = False
         while True:
             yield RisingEdge(self.clk)
@@ -222,16 +223,16 @@ class AhbLite3SlaveMemory:
                 raise TestFailure("HREADYOUT == 0 but HREADY == 1 ??? " + self.ahb.HREADY._name)
             busy = busyNew
             if (busy):
-                self.ahb.HREADYOUT <= randomizer.get() # make some random delay for NONSEQ and SEQ requests
+                self.ahb.HREADYOUT.value = randomizer.get()  # make some random delay for NONSEQ and SEQ requests
             else:
-                self.ahb.HREADYOUT <= 1 # IDLE and BUSY require 0 WS
+                self.ahb.HREADYOUT.value = 1  # IDLE and BUSY require 0 WS
 
-    @cocotb.coroutine
+    @coroutine
     def stim(self):
         ahb = self.ahb
-        ahb.HREADYOUT <= 1
-        ahb.HRESP     <= 0
-        ahb.HRDATA    <= 0
+        ahb.HREADYOUT.value = 1
+        ahb.HRESP.value     = 0
+        ahb.HRDATA.value    = 0
         valid = 0
         while True:
             yield RisingEdge(self.clk)
@@ -252,7 +253,7 @@ class AhbLite3SlaveMemory:
             address = int(ahb.HADDR)
             addressOffset = address % (len(ahb.HWDATA)//8)
 
-            ahb.HRDATA <= 0
+            ahb.HRDATA.value = 0
             if valid == 1:
                 if trans >= 2:
                     if write == 0:
@@ -261,4 +262,4 @@ class AhbLite3SlaveMemory:
                             data |= self.ram[address-self.base + idx] << (8*(addressOffset + idx))
                             # print("read %x with %x" % (address + idx, self.ram[address-self.base + idx]))
                         # print(str(data))
-                        ahb.HRDATA <= int(data)
+                        ahb.HRDATA.value = int(data)

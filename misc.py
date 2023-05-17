@@ -2,10 +2,9 @@ import random
 
 import cocotb
 from cocotb.binary import BinaryValue
-from cocotb.decorators import coroutine
 from cocotb.result import TestFailure
 from cocotb.triggers import Timer, RisingEdge
-
+from cocotb.decorators import coroutine
 
 def cocotbXHack():
     if hasattr(BinaryValue,"_resolve_to_0"):
@@ -30,10 +29,10 @@ def randBits(width):
     return random.getrandbits(width)
 
 def randSignal(that):
-    that <= random.getrandbits(len(that))
+    that.value = random.getrandbits(len(that))
 
 def randBoolSignal(that,prob):
-    that <= (random.random() < prob)
+    that.value = (random.random() < prob)
 
 
 @coroutine
@@ -83,28 +82,28 @@ def sint(signal):
     return signal.value.signed_integer
 
 
-@cocotb.coroutine
+@coroutine
 def ClockDomainAsyncReset(clk,reset,period = 1000):
     if reset:
-        reset <= 1
-    clk <= 0
+        reset.value = 1
+    clk.value = 0
     yield Timer(period)
     if reset:
-        reset <= 0
+        reset.value = 0
     while True:
-        clk <= 0
+        clk.value = 0
         yield Timer(period/2)
-        clk <= 1
+        clk.value = 1
         yield Timer(period/2)
 
-@cocotb.coroutine
+@coroutine
 def SimulationTimeout(duration):
     yield Timer(duration)
     raise TestFailure("Simulation timeout")
 
 
 import time
-@cocotb.coroutine
+@coroutine
 def simulationSpeedPrinter(clk):
     counter = 0
     lastTime = time.time()
@@ -147,22 +146,22 @@ class BoolRandomizer:
 
 MyObject = type('MyObject', (object,), {})
 
-@cocotb.coroutine
+@coroutine
 def StreamRandomizer(streamName, onNew,handle, dut, clk):
     validRandomizer = BoolRandomizer()
     valid = getattr(dut, streamName + "_valid")
     ready = getattr(dut, streamName + "_ready")
     payloads = [a for a in dut if a._name.startswith(streamName + "_payload")]
 
-    valid <= 0
+    valid.value = 0
     while True:
         yield RisingEdge(clk)
         if int(ready) == 1:
-            valid <= 0
+            valid.value = 0
 
         if int(valid) == 0 or int(ready) == 1:
             if validRandomizer.get():
-                valid <= 1
+                valid.value = 1
                 for e in payloads:
                     randSignal(e)
                 yield Timer(1)
@@ -175,17 +174,17 @@ def StreamRandomizer(streamName, onNew,handle, dut, clk):
                 if onNew:
                     onNew(payload,handle)
 
-@cocotb.coroutine
+@coroutine
 def FlowRandomizer(streamName, onNew,handle, dut, clk):
     validRandomizer = BoolRandomizer()
     valid = getattr(dut, streamName + "_valid")
     payloads = [a for a in dut if a._name.startswith(streamName + "_payload")]
 
-    valid <= 0
+    valid.value = 0
     while True:
         yield RisingEdge(clk)
         if validRandomizer.get():
-            valid <= 1
+            valid.value = 1
             for e in payloads:
                 randSignal(e)
             yield Timer(1)
@@ -198,19 +197,19 @@ def FlowRandomizer(streamName, onNew,handle, dut, clk):
             if onNew:
                 onNew(payload,handle)
         else:
-            valid <= 0
+            valid.value = 0
 
-@cocotb.coroutine
+@coroutine
 def StreamReader(streamName, onTransaction, handle, dut, clk):
     validRandomizer = BoolRandomizer()
     valid = getattr(dut, streamName + "_valid")
     ready = getattr(dut, streamName + "_ready")
     payloads = [a for a in dut if a._name.startswith(streamName + "_payload")]
 
-    ready <= 0
+    ready.value = 0
     while True:
         yield RisingEdge(clk)
-        ready <= validRandomizer.get()
+        ready.value = validRandomizer.get()
         if int(valid) == 1 and int(ready) == 1:
             if len(payloads) == 1 and payloads[0]._name == streamName + "_payload":
                 payload = int(payloads[0])
