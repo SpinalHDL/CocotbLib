@@ -74,8 +74,8 @@ class Axi4SharedMemoryChecker(Infrastructure):
         StreamDriverMaster(axi.w, self.genWriteData, clk, reset)
         StreamMonitor(axi.r, self.onReadRsp, clk, reset)
         StreamMonitor(axi.b, self.onWriteRsp, clk, reset)
-        axi.w.payload.last <= 0
-        axi.r.payload.last <= 0
+        axi.w.payload.last.value = 0
+        axi.r.payload.last.value = 0
 
     def freeReservatedAddresses(self,uut,ref,equal):
         self.reservedAddresses.pop(ref,None)
