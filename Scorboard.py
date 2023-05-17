@@ -3,7 +3,7 @@ from queue import Queue
 import cocotb
 from cocotb.result import TestFailure
 
-from cocotblib.Phase import Infrastructure, PHASE_CHECK_SCORBOARDS
+from .Phase import Infrastructure, PHASE_CHECK_SCORBOARDS
 
 
 class ScorboardInOrder(Infrastructure):
