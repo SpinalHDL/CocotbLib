@@ -13,10 +13,11 @@ def cocotbXHack():
         BinaryValue._resolve_to_0     = BinaryValue._resolve_to_0  + BinaryValue._resolve_to_error
         BinaryValue._resolve_to_error = ""
     elif hasattr(cocotb.binary, "resolve_x_to"):
-        # cocotb 1.5.0+
         if hasattr(cocotb.binary, "_ResolveXToValue"):
+            # cocotb 1.9.0+
             cocotb.binary.resolve_x_to = cocotb.binary._ResolveXToValue.ZEROS
         else:
+            # cocotb 1.5.0 ~ 1.8.x
             cocotb.binary.resolve_x_to = "ZEROS"
         cocotb.binary._resolve_table = cocotb.binary._ResolveTable()
 
