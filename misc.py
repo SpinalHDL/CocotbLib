@@ -14,7 +14,10 @@ def cocotbXHack():
         BinaryValue._resolve_to_error = ""
     elif hasattr(cocotb.binary, "resolve_x_to"):
         # cocotb 1.5.0+
-        cocotb.binary.resolve_x_to = "ZEROS"
+        if hasattr(cocotb.binary, "_ResolveXToValue"):
+            cocotb.binary.resolve_x_to = cocotb.binary._ResolveXToValue.ZEROS
+        else:
+            cocotb.binary.resolve_x_to = "ZEROS"
         cocotb.binary._resolve_table = cocotb.binary._ResolveTable()
 
 def log2Up(value):
