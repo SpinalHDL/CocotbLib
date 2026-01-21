@@ -1,6 +1,6 @@
 import cocotb
 from cocotb.triggers import RisingEdge, Event
-from cocotblib.misc import Bundle
+from .misc import Bundle
 
 
 ###############################################################################
@@ -26,7 +26,7 @@ class Flow:
     #==========================================================================
     def startMonitoringValid(self, clk):
         self.clk  = clk
-        self.fork_valid = cocotb.fork(self.monitor_valid())
+        self.fork_valid = cocotb.start_soon(self.monitor_valid())
 
 
     #==========================================================================
