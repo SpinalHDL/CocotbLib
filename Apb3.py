@@ -1,26 +1,26 @@
 import random
 
 import cocotb
-from cocotb.decorators import coroutine
 from cocotb.result import TestFailure, ReturnValue
 from cocotb.triggers import RisingEdge, Edge
+from cocotb.decorators import coroutine
 
-from cocotblib.misc import log2Up, BoolRandomizer, assertEquals, waitClockedCond, randSignal
+from .misc import log2Up, BoolRandomizer, assertEquals, waitClockedCond, randSignal
 
 
 class Apb3:
-    def __init__(self, dut, name, clk = None):
+    def __init__(self, dut, name, clk=None):
         self.clk = clk
-        self.PADDR     = dut.__getattr__(name + "_PADDR")
-        self.PSEL      = dut.__getattr__(name + "_PSEL")
-        self.PENABLE   = dut.__getattr__(name + "_PENABLE")
-        self.PREADY    = dut.__getattr__(name + "_PREADY")
-        self.PWRITE    = dut.__getattr__(name + "_PWRITE")
-        self.PWDATA    = dut.__getattr__(name + "_PWDATA")
-        self.PRDATA    = dut.__getattr__(name + "_PRDATA")
+        self.PADDR = dut.__getattr__(name + "_PADDR")
+        self.PSEL = dut.__getattr__(name + "_PSEL")
+        self.PENABLE = dut.__getattr__(name + "_PENABLE")
+        self.PREADY = dut.__getattr__(name + "_PREADY")
+        self.PWRITE = dut.__getattr__(name + "_PWRITE")
+        self.PWDATA = dut.__getattr__(name + "_PWDATA")
+        self.PRDATA = dut.__getattr__(name + "_PRDATA")
 
     def idle(self):
-        self.PSEL <= 0
+        self.PSEL.value = 0
 
     @coroutine
     def delay(self, cycle):
@@ -28,55 +28,54 @@ class Apb3:
             yield RisingEdge(self.clk)
 
     @coroutine
-    def write(self, address, data, sel = 1):
-        self.PADDR <= address
-        self.PSEL <= sel
-        self.PENABLE <= False
-        self.PWRITE <= True
-        self.PWDATA <= data
+    def write(self, address, data, sel=1):
+        self.PADDR.value = address
+        self.PSEL.value = sel
+        self.PENABLE.value = False
+        self.PWRITE.value = True
+        self.PWDATA.value = data
         yield RisingEdge(self.clk)
-        self.PENABLE <= True
-        yield waitClockedCond(self.clk, lambda : self.PREADY == True)
+        self.PENABLE.value = True
+        yield waitClockedCond(self.clk, lambda: self.PREADY == True)
         randSignal(self.PADDR)
-        self.PSEL <= 0
+        self.PSEL.value = 0
         randSignal(self.PENABLE)
         randSignal(self.PWRITE)
         randSignal(self.PWDATA)
 
     @coroutine
-    def writeMasked(self, address, data, mask, sel = 1):
-        readThread = self.read(address,sel)
+    def writeMasked(self, address, data, mask, sel=1):
+        readThread = self.read(address, sel)
         yield readThread
-        yield self.write(address,(readThread.retval & ~mask) | (data & mask),sel)
+        yield self.write(address, (readThread.retval & ~mask) | (data & mask), sel)
 
     @coroutine
     def read(self, address, sel=1):
-        self.PADDR <= address
-        self.PSEL <= sel
-        self.PENABLE <= False
-        self.PWRITE <= False
+        self.PADDR.value = address
+        self.PSEL.value = sel
+        self.PENABLE.value = False
+        self.PWRITE.value = False
         randSignal(self.PWDATA)
         yield RisingEdge(self.clk)
-        self.PENABLE <= True
+        self.PENABLE.value = True
         yield waitClockedCond(self.clk, lambda: self.PREADY == True)
         randSignal(self.PADDR)
-        self.PSEL <= 0
+        self.PSEL.value = 0
         randSignal(self.PENABLE)
         randSignal(self.PWRITE)
         raise ReturnValue(int(self.PRDATA))
 
-
     @coroutine
     def readAssert(self, address, data, sel=1):
-        readThread = self.read(address,sel)
+        readThread = self.read(address, sel)
         yield readThread
-        assertEquals(int(readThread.retval), data," APB readAssert failure")
+        assertEquals(int(readThread.retval), data, " APB readAssert failure")
 
     @coroutine
     def readAssertMasked(self, address, data, mask, sel=1):
-        readThread = self.read(address,sel)
+        readThread = self.read(address, sel)
         yield readThread
-        assertEquals(int(readThread.retval) & mask, data," APB readAssert failure")
+        assertEquals(int(readThread.retval) & mask, data, " APB readAssert failure")
 
     @coroutine
     def pull(self, address, dataValue, dataMask, sel=1):
