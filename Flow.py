@@ -1,6 +1,6 @@
 import cocotb
 from cocotb.triggers import RisingEdge, Event
-from cocotblib.misc import Bundle
+from .misc import Bundle
 
 
 ###############################################################################

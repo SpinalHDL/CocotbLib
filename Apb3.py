@@ -5,7 +5,7 @@ from cocotb.decorators import coroutine
 from cocotb.result import TestFailure, ReturnValue
 from cocotb.triggers import RisingEdge, Edge
 
-from cocotblib.misc import log2Up, BoolRandomizer, assertEquals, waitClockedCond, randSignal
+from .misc import log2Up, BoolRandomizer, assertEquals, waitClockedCond, randSignal
 
 
 class Apb3:
@@ -20,7 +20,7 @@ class Apb3:
         self.PRDATA    = dut.__getattr__(name + "_PRDATA")
 
     def idle(self):
-        self.PSEL <= 0
+        self.PSEL.value = 0
 
     @coroutine
     def delay(self, cycle):
@@ -29,16 +29,16 @@ class Apb3:
 
     @coroutine
     def write(self, address, data, sel = 1):
-        self.PADDR <= address
-        self.PSEL <= sel
-        self.PENABLE <= False
-        self.PWRITE <= True
-        self.PWDATA <= data
+        self.PADDR.value = address
+        self.PSEL.value = sel
+        self.PENABLE.value = False
+        self.PWRITE.value = True
+        self.PWDATA.value = data
         yield RisingEdge(self.clk)
-        self.PENABLE <= True
+        self.PENABLE.value = True
         yield waitClockedCond(self.clk, lambda : self.PREADY == True)
         randSignal(self.PADDR)
-        self.PSEL <= 0
+        self.PSEL.value = 0
         randSignal(self.PENABLE)
         randSignal(self.PWRITE)
         randSignal(self.PWDATA)
@@ -51,16 +51,16 @@ class Apb3:
 
     @coroutine
     def read(self, address, sel=1):
-        self.PADDR <= address
-        self.PSEL <= sel
-        self.PENABLE <= False
-        self.PWRITE <= False
+        self.PADDR.value = address
+        self.PSEL.value = sel
+        self.PENABLE.value = False
+        self.PWRITE.value = False
         randSignal(self.PWDATA)
         yield RisingEdge(self.clk)
-        self.PENABLE <= True
+        self.PENABLE.value = True
         yield waitClockedCond(self.clk, lambda: self.PREADY == True)
         randSignal(self.PADDR)
-        self.PSEL <= 0
+        self.PSEL.value = 0
         randSignal(self.PENABLE)
         randSignal(self.PWRITE)
         raise ReturnValue(int(self.PRDATA))

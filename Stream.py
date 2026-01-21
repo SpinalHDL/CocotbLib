@@ -3,10 +3,10 @@ import cocotb
 import types
 from cocotb.result import TestFailure
 from cocotb.triggers import RisingEdge, Timer, Event
-from cocotblib.Phase import Infrastructure, PHASE_WAIT_TASKS_END
-from cocotblib.Scorboard import ScorboardInOrder
+from .Phase import Infrastructure, PHASE_WAIT_TASKS_END
+from .Scorboard import ScorboardInOrder
 
-from cocotblib.misc import Bundle, BoolRandomizer
+from .misc import Bundle, BoolRandomizer
 
 
 class Stream:
@@ -94,11 +94,11 @@ class StreamDriverMaster:
     @cocotb.coroutine
     def stim(self):
         stream = self.stream
-        stream.valid <= 0
+        stream.valid.value = 0
         while True:
             yield RisingEdge(self.clk)
             if int(stream.valid) == 1 and int(stream.ready) == 1:
-                stream.valid <= 0
+                stream.valid.value = 0
                 for i in range(nextDelay):
                     yield RisingEdge(self.clk)
 
@@ -112,12 +112,12 @@ class StreamDriverMaster:
                         nextDelay = trans.nextDelay
                     else:
                         nextDelay = 0
-                    stream.valid <= 1
+                    stream.valid.value = 1
 
                     for name in stream.payload.nameToElement:
                         if hasattr(trans,name) == False:
                             raise Exception("Missing element in bundle :" + name)
-                        e = stream.payload.nameToElement[name] <= getattr(trans,name)
+                        e = stream.payload.nameToElement[name].value = getattr(trans,name)
 
 
 
@@ -132,10 +132,10 @@ class StreamDriverSlave:
     @cocotb.coroutine
     def stim(self):
         stream = self.stream
-        stream.ready <= 1
+        stream.ready.value = 1
         while True:
             yield RisingEdge(self.clk)
-            stream.ready <= self.randomizer.get()
+            stream.ready.value = self.randomizer.get()
 
 
 def TransactionFromBundle(bundle):
