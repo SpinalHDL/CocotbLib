@@ -1,6 +1,7 @@
 import cocotb
 from cocotb.result import TestFailure, TestError
 from cocotb.triggers import Timer
+from cocotb.decorators import coroutine
 
 PHASE_NULL = 0
 PHASE_SIM = 100
@@ -62,7 +63,7 @@ class PhaseManager(Infrastructure):
     def setWaitTasksEndTime(self,value):
         self.waitTasksEndTime = value
 
-    @cocotb.coroutine
+    @coroutine
     def waitChild(self):
         while True:
             if self.canPhaseProgress(self.phase):
@@ -79,7 +80,7 @@ class PhaseManager(Infrastructure):
         for infra in self.children:
             infra.startPhase(self.phase)
 
-    @cocotb.coroutine
+    @coroutine
     def run(self):
         self.switchPhase(PHASE_SIM)
         yield self.waitChild()
