@@ -1,0 +1,35 @@
+name: lint
+on:
+  # Runs on all pushes to branches
+  push:
+  # Runs on all PRs
+  pull_request:
+  # Manual Dispatch
+  workflow_dispatch:
+
+jobs:
+  lint_python:
+    name: Lint Python Code
+    runs-on: ubuntu-latest
+    
+    env:
+      BLACK_OPTS: --line-length 136
+      # E203 difference of opinion between black and flake8
+      # E203 whitespace before ':'
+      FLAKE8_OPTS: --max-line-length 136 --ignore=E203
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@main
+
+      - name: Install Linters
+        run: python3 -m pip install -r ./requirements_lint.txt
+
+      - name: Ensure Black Formatting
+        run: black --diff --color $BLACK_OPTS .
+
+      - name: Ensure Black Formatting
+        run: black --check $BLACK_OPTS .
+
+      - name: Lint with Flake8
+        run: flake8 $FLAKE8_OPTS --exclude venv .
